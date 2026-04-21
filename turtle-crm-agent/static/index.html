@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turtle CRM Extractor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="logo">Turtle <span>CRM Field Extractor</span></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>exact_quote</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>clearly_inferable</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>estimated</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>indirect</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>speculative</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#374151"></div>not extracted</div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ── Left: Input panel ── -->
+  <div class="left-panel">
+    <div class="panel-header">Transcript Input</div>
+
+    <div class="fields-section">
+      <div class="field-row">
+        <input id="clientId" type="text" placeholder="Client ID (e.g. lead_1)" value="manual_input" />
+      </div>
+    </div>
+
+    <textarea id="transcript" placeholder="Paste the conversation transcript here…"></textarea>
+
+    <footer>
+      <button id="extractBtn">Extract Fields</button>
+      <div id="statusBar" class="status-bar"></div>
+    </footer>
+  </div>
+
+  <!-- ── Right: Results panel ── -->
+  <div class="right-panel">
+    <div class="toolbar">
+      <input type="search" id="searchBox" placeholder="Search fields…" />
+      <select id="categoryFilter">
+        <option value="">All categories</option>
+      </select>
+      <label>
+        <input type="checkbox" id="hideNull" /> Hide not-extracted
+      </label>
+      <div class="stat-pill" id="statPill">—</div>
+    </div>
+
+    <div class="results-scroll" id="resultsArea">
+      <div class="placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0120 9.414V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span>Paste a transcript and click Extract Fields</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
