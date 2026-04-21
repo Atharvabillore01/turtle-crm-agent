@@ -1,0 +1,79 @@
+# ── Secrets & environment ──────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.key
+secrets/
+credentials/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ── Virtual environments ───────────────────────────────────────────────────────
+venv/
+ENV/
+env/
+.venv
+venv.bak/
+env.bak/
+
+# ── IDEs ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Testing ────────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/**
+!logs/.gitkeep
+!logs/audit/.gitkeep
+!logs/debug/.gitkeep
+
+# ── Extraction output (contains client data — never commit) ────────────────────
+output/**
+!output/.gitkeep
+
+# ── Client conversation transcripts (real PII data) ───────────────────────────
+data/conversations/**/*.md
+!data/conversations/.gitkeep
+
+# ── Markdown files ─────────────────────────────────────────────────────────────
+*.md
+!README.md
+!SETUP.md
+
+# ── Temporary files ───────────────────────────────────────────────────────────
+*.tmp
+*.temp
+.cache/
+tmp/
