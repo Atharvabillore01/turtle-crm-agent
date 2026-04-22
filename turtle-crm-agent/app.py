@@ -3,6 +3,7 @@ Flask API server for the Turtle CRM Field-Filler Agent.
 Exposes a single endpoint: POST /extract
 """
 
+import csv
 import json
 import tempfile
 from pathlib import Path
@@ -10,6 +11,8 @@ from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 
 from agents.orchestrator import Orchestrator
+from main import _write_csv
+from utils.html_export import generate_html_report
 
 app = Flask(__name__, static_folder="static")
 
@@ -48,6 +51,7 @@ def extract():
     output_dir = Path("output")
     output_dir.mkdir(exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    used_model = model or orchestrator.model
 
     filled_fields = {k: v for k, v in results.items() if v.get("value") is not None}
     base = {
@@ -63,6 +67,9 @@ def extract():
         json.dump(all_payload, f, indent=2, ensure_ascii=False)
     with open(output_dir / f"{client_id}_extraction_{ts}_filled.json", "w", encoding="utf-8") as f:
         json.dump(filled_payload, f, indent=2, ensure_ascii=False)
+
+    _write_csv(output_dir / f"{client_id}_extraction_{ts}.csv", client_id, used_model, results)
+    generate_html_report(output_dir / f"{client_id}_extraction_{ts}.html", client_id, used_model, results)
 
     # Return both in the API response
     return jsonify({**all_payload, "filled_fields": filled_payload["fields"]})

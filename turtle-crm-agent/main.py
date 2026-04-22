@@ -3,6 +3,7 @@ Turtle CRM Field-Filler Agent - Main Entry Point
 """
 
 import sys
+import csv
 import json
 import argparse
 from pathlib import Path
@@ -10,6 +11,45 @@ from datetime import datetime
 
 from config import PRIMARY_MODEL
 from agents.orchestrator import Orchestrator
+from utils.html_export import generate_html_report
+
+
+_CSV_COLUMNS = [
+    "client_id", "model", "field_id", "touch_point", "attribute",
+    "value", "confidence", "confidence_level", "source", "agent", "extracted",
+]
+
+
+def _flatten_value(v):
+    """Stringify complex values so they fit cleanly in a CSV cell."""
+    if v is None:
+        return ""
+    if isinstance(v, list):
+        return " | ".join(str(i) for i in v)
+    if isinstance(v, dict):
+        return json.dumps(v, ensure_ascii=False)
+    return str(v)
+
+
+def _write_csv(path: Path, client_id: str, model: str, fields: dict):
+    with open(path, "w", newline="", encoding="utf-8-sig") as f:  # utf-8-sig for Excel BOM
+        writer = csv.DictWriter(f, fieldnames=_CSV_COLUMNS)
+        writer.writeheader()
+        for field_id, data in fields.items():
+            value = data.get("value")
+            writer.writerow({
+                "client_id": client_id,
+                "model": model,
+                "field_id": field_id,
+                "touch_point": data.get("touch_point", ""),
+                "attribute": data.get("attribute", ""),
+                "value": _flatten_value(value),
+                "confidence": data.get("confidence", ""),
+                "confidence_level": data.get("confidence_level", ""),
+                "source": data.get("source", ""),
+                "agent": data.get("agent", ""),
+                "extracted": "Y" if value is not None else "N",
+            })
 
 
 def main():
@@ -103,18 +143,27 @@ Examples:
             "duration_seconds": round(duration, 2),
         }
 
-        # 1. All 174 parameters
+        # 1. All 174 parameters (JSON)
         all_file = output_dir / f"{args.client}_extraction_{ts}_all.json"
         with open(all_file, "w", encoding="utf-8") as f:
             json.dump({**base, "total_fields": len(results), "fields": results}, f, indent=2, ensure_ascii=False)
 
-        # 2. Only filled parameters
+        # 2. Only filled parameters (JSON)
         filled_file = output_dir / f"{args.client}_extraction_{ts}_filled.json"
         with open(filled_file, "w", encoding="utf-8") as f:
             json.dump({**base, "total_fields": len(filled_fields), "fields": filled_fields}, f, indent=2, ensure_ascii=False)
 
+        # 3. CSV
+        csv_file = output_dir / f"{args.client}_extraction_{ts}.csv"
+        _write_csv(csv_file, args.client, args.model, results)
+
+        # 4. Interactive HTML report
+        html_file = output_dir / f"{args.client}_extraction_{ts}.html"
+        generate_html_report(html_file, args.client, args.model, results)
+
         print(f"OK All fields ({len(results)}):    {all_file}")
         print(f"OK Filled fields ({len(filled_fields)}): {filled_file}")
+        print(f"OK HTML report:           {html_file}")
         return 0
         
     except Exception as e:
