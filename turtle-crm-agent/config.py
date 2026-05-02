@@ -21,7 +21,7 @@ load_dotenv()
 LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "anthropic").lower()
 
 # Validate provider
-SUPPORTED_PROVIDERS = {'anthropic', 'claude', 'openai', 'azure', 'azure_openai', 'groq'}
+SUPPORTED_PROVIDERS = {'anthropic', 'claude', 'openai', 'azure', 'azure_openai', 'groq', 'gemini', 'google'}
 if LLM_PROVIDER not in SUPPORTED_PROVIDERS:
     raise ValueError(
         f"Invalid LLM_PROVIDER: {LLM_PROVIDER}. "
@@ -54,6 +54,14 @@ MODEL_CONFIG = {
         'model': os.environ.get("GROQ_MODEL", "mixtral-8x7b-32768"),
         'api_key_var': 'GROQ_API_KEY',
     },
+    'gemini': {
+        'model': os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"),
+        'api_key_var': 'GEMINI_API_KEY',
+    },
+    'google': {
+        'model': os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"),
+        'api_key_var': 'GEMINI_API_KEY',
+    },
 }
 
 # Get API key for selected provider
@@ -71,7 +79,7 @@ if not API_KEY:
     )
 
 # Fallback model (only for Claude/Anthropic)
-FALLBACK_MODEL = "claude-opus-4-6" if LLM_PROVIDER in ('anthropic', 'claude') else None
+FALLBACK_MODEL = "claude-opus-4-7" if LLM_PROVIDER in ('anthropic', 'claude') else None
 
 # ============================================================================
 # PROCESSING CONFIGURATION
