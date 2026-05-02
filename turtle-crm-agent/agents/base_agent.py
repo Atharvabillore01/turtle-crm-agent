@@ -5,6 +5,7 @@ Each agent specializes in extracting a specific category of CRM fields.
 
 import json
 import re
+import time
 from typing import Dict, List, Any, Optional
 from schema.crm_schema import get_fields_by_touch_point
 from utils.llm_provider import LLMFactory
@@ -27,6 +28,7 @@ class BaseAgent:
         self.client_id = client_id
         self.name = self.__class__.__name__
         self.model = model or PRIMARY_MODEL
+        self.usage = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
         try:
             self.llm = LLMFactory.create(
@@ -50,11 +52,29 @@ class BaseAgent:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ]
-        return self.llm.create_message(
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-        )
+        max_retries = 5
+        wait = 60
+        for attempt in range(max_retries):
+            try:
+                result = self.llm.create_message(
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                )
+                # Snapshot usage delta after this call
+                llm_usage = self.llm.get_usage()
+                self.usage["input_tokens"]  = llm_usage["input_tokens"]
+                self.usage["output_tokens"] = llm_usage["output_tokens"]
+                self.usage["total_tokens"]  = llm_usage["total_tokens"]
+                return result
+            except Exception as e:
+                err = str(e)
+                if ("429" in err or "rate_limit" in err) and attempt < max_retries - 1:
+                    print(f"[{self.name}] Rate limit hit, waiting {wait}s (attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(wait)
+                    wait = min(wait * 2, 300)
+                else:
+                    raise
 
     _MAX_TRANSCRIPT_CHARS = MAX_TRANSCRIPT_CHARS
 
@@ -85,6 +105,11 @@ class BaseAgent:
             "You are a CRM data extraction specialist for Turtle Finance, a wealth "
             "management firm serving NRI (Non-Resident Indian) clients returning to India.\n\n"
             f"Your task is to extract {category} fields from financial advisory call transcripts.\n\n"
+            "LANGUAGE RULES:\n"
+            "- Transcripts may be in English, Hindi (Devanagari script), Hinglish (Hindi-English mix), or any combination.\n"
+            "- Understand all three. Extract and return ALL field values in English only.\n"
+            "- Translate names, places, and concepts accurately — do not transliterate unnecessarily.\n"
+            "- For monetary amounts mentioned in Hindi (e.g. 'teen crore', 'paanch lakh'), convert to the numeric English form.\n\n"
             "STRICT RULES — returning null is always safer than a wrong value:\n\n"
             "ACCURACY:\n"
             "1. Extract ONLY what is explicitly stated or directly obvious. Never fabricate or generalise.\n"

@@ -25,15 +25,12 @@
   <!-- ── Left: Input panel ── -->
   <div class="left-panel">
     <div class="panel-header">Transcript Input</div>
-
     <div class="fields-section">
       <div class="field-row">
         <input id="clientId" type="text" placeholder="Client ID (e.g. lead_1)" value="manual_input" />
       </div>
     </div>
-
     <textarea id="transcript" placeholder="Paste the conversation transcript here…"></textarea>
-
     <footer>
       <button id="extractBtn">Extract Fields</button>
       <div id="statusBar" class="status-bar"></div>
@@ -43,13 +40,22 @@
   <!-- ── Right: Results panel ── -->
   <div class="right-panel">
     <div class="toolbar">
+
+      <!-- View toggle -->
+      <div class="view-toggle">
+        <button id="viewCards" class="vt-btn active">&#9783; Cards</button>
+        <button id="viewTable" class="vt-btn">&#9776; Table</button>
+      </div>
+
+      <!-- Global search (both modes) -->
       <input type="search" id="searchBox" placeholder="Search fields…" />
-      <select id="categoryFilter">
-        <option value="">All categories</option>
-      </select>
-      <label>
-        <input type="checkbox" id="hideNull" /> Hide not-extracted
-      </label>
+
+      <!-- Card-only controls -->
+      <div id="cardFilters">
+        <select id="categoryFilter"><option value="">All categories</option></select>
+        <label><input type="checkbox" id="hideNull" /> Hide not-extracted</label>
+      </div>
+
       <div class="stat-pill" id="statPill">—</div>
     </div>
 
