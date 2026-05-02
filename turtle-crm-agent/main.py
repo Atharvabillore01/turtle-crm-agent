@@ -334,7 +334,7 @@ Examples:
     start_time = datetime.now()
 
     try:
-        results, per_agent = orchestrator.orchestrate(
+        results, per_agent, token_usage = orchestrator.orchestrate(
             transcript_paths=[str(f) for f in transcript_files],
             document_paths=None,
         )
@@ -342,6 +342,19 @@ Examples:
         duration = (datetime.now() - start_time).total_seconds()
         print(f"\nOK Extraction complete in {duration:.1f} seconds")
         print(f"OK Extracted {len(results)} fields")
+
+        # Print token usage table
+        totals = token_usage.get("__total__", {})
+        print(f"\n{'─'*58}")
+        print(f"{'Agent':<20} {'Input':>10} {'Output':>10} {'Total':>10}")
+        print(f"{'─'*58}")
+        for agent_name, u in token_usage.items():
+            if agent_name == "__total__":
+                continue
+            print(f"  {agent_name:<18} {u['input_tokens']:>10,} {u['output_tokens']:>10,} {u['total_tokens']:>10,}")
+        print(f"{'─'*58}")
+        print(f"  {'TOTAL':<18} {totals.get('input_tokens',0):>10,} {totals.get('output_tokens',0):>10,} {totals.get('total_tokens',0):>10,}")
+        print(f"{'─'*58}\n")
 
         # ── Per-run folder: provider_model_date_time ──────────────────────────
         ts         = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -355,6 +368,7 @@ Examples:
             "model":            args.model,
             "extracted_at":     datetime.now().isoformat(),
             "duration_seconds": round(duration, 2),
+            "token_usage":      token_usage,
         }
 
         # 1. Individual JSON per agent
