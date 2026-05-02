@@ -71,6 +71,12 @@ class Orchestrator:
         # 3. Run agents in sequence
         results = {}
         per_agent: Dict[str, Dict[str, Any]] = {}
+        token_usage: Dict[str, Dict[str, int]] = {}   # agent_name -> usage dict
+
+        def _snapshot_usage(agent_name: str):
+            agent = self.agents.get(agent_name)
+            if agent:
+                token_usage[agent_name] = dict(agent.usage)
 
         # Phase 1: Core information extraction
         phase1_agents = ['demographics', 'finance', 'goals', 'professional', 'schedule', 'qualitative']
@@ -79,46 +85,68 @@ class Orchestrator:
                 agent_fields = self.agents[agent_name].run(full_context)
                 per_agent[agent_name] = agent_fields
                 results.update(agent_fields)
-                print(f"[Orchestrator] {agent_name}: extracted {len(agent_fields)} fields")
+                _snapshot_usage(agent_name)
+                u = token_usage.get(agent_name, {})
+                print(f"[Orchestrator] {agent_name}: extracted {len(agent_fields)} fields  "
+                      f"[tokens in={u.get('input_tokens',0):,} out={u.get('output_tokens',0):,}]")
             except Exception as e:
                 print(f"[Orchestrator] WARNING: {agent_name} agent failed: {e}")
                 per_agent[agent_name] = {}
+                token_usage[agent_name] = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
         # Phase 2: Task generation (depends on previous results)
         try:
             task_results = self.agents['task'].run(full_context, results)
             per_agent['task'] = task_results
             results.update(task_results)
-            print(f"[Orchestrator] task: extracted {len(task_results)} fields")
+            _snapshot_usage('task')
+            u = token_usage.get('task', {})
+            print(f"[Orchestrator] task: extracted {len(task_results)} fields  "
+                  f"[tokens in={u.get('input_tokens',0):,} out={u.get('output_tokens',0):,}]")
         except Exception as e:
             print(f"[Orchestrator] WARNING: task agent failed: {e}")
             per_agent['task'] = {}
+            token_usage['task'] = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
         # Phase 3: Feedback/sentiment
         try:
             feedback_results = self.agents['feedback'].run(full_context)
             per_agent['feedback'] = feedback_results
             results.update(feedback_results)
-            print(f"[Orchestrator] feedback: extracted {len(feedback_results)} fields")
+            _snapshot_usage('feedback')
+            u = token_usage.get('feedback', {})
+            print(f"[Orchestrator] feedback: extracted {len(feedback_results)} fields  "
+                  f"[tokens in={u.get('input_tokens',0):,} out={u.get('output_tokens',0):,}]")
         except Exception as e:
             print(f"[Orchestrator] WARNING: feedback agent failed: {e}")
             per_agent['feedback'] = {}
+            token_usage['feedback'] = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
-        # Phase 4: System fields (deterministic, cannot fail)
+        # Phase 4: System fields (deterministic, no tokens)
         system_fields = SystemResolver.resolve_system_fields(self.client_id)
         per_agent['system'] = system_fields
         results.update(system_fields)
+        token_usage['system'] = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+
+        # Total across all agents
+        total_in  = sum(v["input_tokens"]  for v in token_usage.values())
+        total_out = sum(v["output_tokens"] for v in token_usage.values())
+        token_usage['__total__'] = {
+            "input_tokens":  total_in,
+            "output_tokens": total_out,
+            "total_tokens":  total_in + total_out,
+        }
 
         # Normalise keys and enrich with attribute names from schema
         results = self._enrich_results(results)
 
-        # Enrich per-agent results too (add attribute/touch_point from schema)
         for agent_name, agent_fields in per_agent.items():
             per_agent[agent_name] = self._enrich_agent_results(agent_name, agent_fields)
 
-        print(f"[Orchestrator] Extraction complete. Total fields: {len(results)}")
+        print(f"[Orchestrator] Extraction complete. Total fields: {len(results)}  "
+              f"[TOTAL tokens in={total_in:,} out={total_out:,} total={total_in+total_out:,}]")
 
-        return results, per_agent
+        return results, per_agent, token_usage
 
     def _enrich_results(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """

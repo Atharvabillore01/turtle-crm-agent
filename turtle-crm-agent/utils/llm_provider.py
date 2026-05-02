@@ -10,20 +10,15 @@ import os
 
 class LLMProvider(ABC):
     """Abstract base class for all LLM providers."""
-    
+
     def __init__(self, api_key: str, model: str, **kwargs):
-        """
-        Initialize LLM provider.
-        
-        Args:
-            api_key: API key for the provider
-            model: Model name/ID
-            **kwargs: Additional provider-specific options
-        """
         self.api_key = api_key
         self.model = model
         self.kwargs = kwargs
-    
+        # Accumulated token counts across all calls on this instance
+        self.total_input_tokens: int = 0
+        self.total_output_tokens: int = 0
+
     @abstractmethod
     def create_message(
         self,
@@ -31,21 +26,17 @@ class LLMProvider(ABC):
         max_tokens: int = 4000,
         temperature: float = 0.7,
     ) -> str:
-        """
-        Send messages to LLM and get response.
-        
-        Args:
-            messages: List of message dicts with 'role' and 'content'
-            max_tokens: Maximum tokens in response
-            temperature: Sampling temperature (0.0-1.0)
-            
-        Returns:
-            Response text from LLM
-        """
+        """Send messages to LLM and return response text. Updates token counters."""
         pass
-    
+
+    def get_usage(self) -> Dict[str, Any]:
+        return {
+            "input_tokens":  self.total_input_tokens,
+            "output_tokens": self.total_output_tokens,
+            "total_tokens":  self.total_input_tokens + self.total_output_tokens,
+        }
+
     def validate_api_key(self) -> bool:
-        """Validate that API key is set."""
         return bool(self.api_key)
 
 
@@ -67,7 +58,6 @@ class AnthropicProvider(LLMProvider):
         max_tokens: int = 4000,
         temperature: float = 0.7,
     ) -> str:
-        """Send messages to Claude and get response."""
         response = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
@@ -75,6 +65,8 @@ class AnthropicProvider(LLMProvider):
             system=messages[0]['content'] if messages[0]['role'] == 'system' else None,
             messages=[m for m in messages if m['role'] != 'system'],
         )
+        self.total_input_tokens  += response.usage.input_tokens
+        self.total_output_tokens += response.usage.output_tokens
         return response.content[0].text
 
 
@@ -120,34 +112,38 @@ class OpenAIProvider(LLMProvider):
         params = _openai_completion_params(self.model, max_tokens, temperature)
         params["messages"] = messages
         response = self.client.chat.completions.create(**params)
+        if response.usage:
+            self.total_input_tokens  += response.usage.prompt_tokens
+            self.total_output_tokens += response.usage.completion_tokens
         return response.choices[0].message.content
 
 
 class GroqProvider(LLMProvider):
     """Groq provider (fast inference with Llama, Mixtral, etc.)."""
-    
+
     def __init__(self, api_key: str, model: str = "mixtral-8x7b-32768", **kwargs):
-        """Initialize Groq provider."""
         super().__init__(api_key, model, **kwargs)
         try:
             from groq import Groq
             self.client = Groq(api_key=api_key)
         except ImportError:
             raise ImportError("groq package required: pip install groq")
-    
+
     def create_message(
         self,
         messages: List[Dict[str, str]],
         max_tokens: int = 4000,
         temperature: float = 0.7,
     ) -> str:
-        """Send messages to Groq and get response."""
         response = self.client.chat.completions.create(
             model=self.model,
             max_tokens=max_tokens,
             temperature=temperature,
             messages=messages,
         )
+        if response.usage:
+            self.total_input_tokens  += response.usage.prompt_tokens
+            self.total_output_tokens += response.usage.completion_tokens
         return response.choices[0].message.content
 
 
@@ -182,6 +178,9 @@ class AzureOpenAIProvider(LLMProvider):
         params["messages"] = messages
         params["model"] = self.deployment
         response = self.client.chat.completions.create(**params)
+        if response.usage:
+            self.total_input_tokens  += response.usage.prompt_tokens
+            self.total_output_tokens += response.usage.completion_tokens
         return response.choices[0].message.content
 
 
@@ -203,14 +202,12 @@ class GeminiProvider(LLMProvider):
         max_tokens: int = 4000,
         temperature: float = 0.1,
     ) -> str:
-        # Separate system prompt from conversation
         system_prompt = None
         chat_messages = []
         for m in messages:
             if m["role"] == "system":
                 system_prompt = m["content"]
             else:
-                # Gemini uses 'user'/'model' roles
                 role = "model" if m["role"] == "assistant" else "user"
                 chat_messages.append({"role": role, "parts": [m["content"]]})
 
@@ -222,8 +219,10 @@ class GeminiProvider(LLMProvider):
                 temperature=temperature,
             ),
         )
-        # Single-turn: send the last user message
         response = model.generate_content(chat_messages)
+        if response.usage_metadata:
+            self.total_input_tokens  += response.usage_metadata.prompt_token_count or 0
+            self.total_output_tokens += response.usage_metadata.candidates_token_count or 0
         return response.text
 
 

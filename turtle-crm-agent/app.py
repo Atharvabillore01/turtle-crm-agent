@@ -40,7 +40,7 @@ def extract():
     try:
         orchestrator = Orchestrator(client_id, model=model)
         start = datetime.now()
-        results, per_agent = orchestrator.orchestrate(transcript_paths=[tmp_path])
+        results, per_agent, token_usage = orchestrator.orchestrate(transcript_paths=[tmp_path])
         duration = round((datetime.now() - start).total_seconds(), 2)
     finally:
         Path(tmp_path).unlink(missing_ok=True)
@@ -60,6 +60,7 @@ def extract():
         "model": used_model,
         "extracted_at": datetime.now().isoformat(),
         "duration_seconds": duration,
+        "token_usage": token_usage,
     }
 
     for agent_name, agent_fields in per_agent.items():

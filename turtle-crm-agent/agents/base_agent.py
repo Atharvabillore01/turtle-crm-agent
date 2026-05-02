@@ -28,6 +28,7 @@ class BaseAgent:
         self.client_id = client_id
         self.name = self.__class__.__name__
         self.model = model or PRIMARY_MODEL
+        self.usage = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
         try:
             self.llm = LLMFactory.create(
@@ -55,11 +56,17 @@ class BaseAgent:
         wait = 60
         for attempt in range(max_retries):
             try:
-                return self.llm.create_message(
+                result = self.llm.create_message(
                     messages=messages,
                     max_tokens=max_tokens,
                     temperature=temperature,
                 )
+                # Snapshot usage delta after this call
+                llm_usage = self.llm.get_usage()
+                self.usage["input_tokens"]  = llm_usage["input_tokens"]
+                self.usage["output_tokens"] = llm_usage["output_tokens"]
+                self.usage["total_tokens"]  = llm_usage["total_tokens"]
+                return result
             except Exception as e:
                 err = str(e)
                 if ("429" in err or "rate_limit" in err) and attempt < max_retries - 1:
