@@ -6,19 +6,10 @@ Each agent specializes in extracting a specific category of CRM fields.
 import json
 import re
 import time
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from schema.crm_schema import get_fields_by_touch_point
 from utils.llm_provider import LLMFactory
-from config import LLM_PROVIDER, PRIMARY_MODEL, MODEL_CONFIG, MAX_TRANSCRIPT_CHARS
-
-# Maps LLM-returned confidence labels to numeric scores
-_CONFIDENCE_SCORES = {
-    "exact_quote": 0.95,
-    "clearly_inferable": 0.80,
-    "estimated": 0.60,
-    "indirect": 0.40,
-    "speculative": 0.15,
-}
+from config import LLM_PROVIDER, PRIMARY_MODEL, MAX_TRANSCRIPT_CHARS, CONFIDENCE_SCORES as _CONFIDENCE_SCORES
 
 
 class BaseAgent:
@@ -95,11 +86,19 @@ class BaseAgent:
         if len(transcript) > self._MAX_TRANSCRIPT_CHARS:
             transcript = transcript[: self._MAX_TRANSCRIPT_CHARS] + "\n\n[TRANSCRIPT TRUNCATED]"
 
-        field_lines = "\n".join(
-            f"  - ID {f['id']}: {f['attribute']}"
-            + (f" (notes: {f['notes']})" if f.get("notes") else "")
-            for f in fields
-        )
+        # Build per-field lines, embedding each field's extraction_instruction
+        # from the schema so the LLM receives targeted guidance without
+        # needing a monolithic hardcoded rules block.
+        field_lines_parts = []
+        for f in fields:
+            line = f"  - ID {f['id']}: {f['attribute']}"
+            instruction = f.get("extraction_instruction", "").strip()
+            if instruction:
+                line += f"\n      Instruction: {instruction}"
+            elif f.get("notes"):
+                line += f"\n      Notes: {f['notes']}"
+            field_lines_parts.append(line)
+        field_lines = "\n".join(field_lines_parts)
 
         system_prompt = (
             "You are a CRM data extraction specialist for Turtle Finance, a wealth "
@@ -110,46 +109,20 @@ class BaseAgent:
             "- Understand all three. Extract and return ALL field values in English only.\n"
             "- Translate names, places, and concepts accurately — do not transliterate unnecessarily.\n"
             "- For monetary amounts mentioned in Hindi (e.g. 'teen crore', 'paanch lakh'), convert to the numeric English form.\n\n"
-            "STRICT RULES — returning null is always safer than a wrong value:\n\n"
-            "ACCURACY:\n"
+            "STRICT RULES — returning null is always safer than a wrong value:\n"
             "1. Extract ONLY what is explicitly stated or directly obvious. Never fabricate or generalise.\n"
             "2. Use null when a field is absent, ambiguous, or only vaguely implied.\n"
             "3. EMAIL ADDRESSES / usernames are NOT names — return null for any name field.\n"
-            "4. Contradictions: if the transcript explicitly denies a value (e.g. 'not even close to 500k'), "
-            "do NOT use that figure. Extract the correct value or null.\n"
-            "5. Suggestions ≠ facts: 'You should create a will' does NOT mean a will exists. "
-            "'You should open an HUF' does NOT mean HUF exists. Only confirmed, past facts count.\n\n"
-            "FINANCIAL FIELDS:\n"
-            "6. 'Assets Worth' means TOTAL portfolio value. If individual assets are listed (cash, EPF, equities, MF, gold, property), "
-            "sum them up and return the total. If only a single transaction is mentioned with no portfolio context, return null.\n"
-            "7. 'Family Income' or 'Monthly Income' = the client's take-home / net monthly salary. "
-            "Extract it when the advisor or client states the net monthly earnings (e.g. 'we receive around 2.65 lakh').\n"
-            "8. List individual assets separately when asked; do not conflate a single item with total worth.\n\n"
-            "AVAILABILITY vs BUSYNESS:\n"
-            "9. CLIENT availability = recurring windows the client has stated they are free for meetings (e.g. 'weekends are fine', 'mornings work'). "
-            "A one-off rescheduling request is NOT recurring availability. Return null if no standing availability is stated.\n"
-            "10. PREFERRED COMMUNICATION: capture ALL channels explicitly mentioned (WhatsApp, email, phone call, etc.). "
-            "Do not stop at the first mention — check the full transcript.\n"
-            "11. 'I have a call this weekend' or 'I'm busy on weekends' means UNAVAILABLE, not available.\n\n"
-            "LOCATION vs TAX RESIDENCY:\n"
-            "12. Living in a country does NOT automatically mean tax residency in that country. "
-            "Only mark tax residency if explicitly discussed or confirmed in the transcript.\n\n"
-            "PERSONALITY / CAPABILITY FIELDS:\n"
-            "13. Execution Capability: being proactive about planning does NOT mean High. "
-            "High requires demonstrated ability to execute complex tasks independently. "
-            "Confusion about basics (401k, fund transfer) is evidence of Medium.\n"
-            "14. Tech Savviness: a family member's profession (e.g. spouse is data scientist) "
-            "does NOT indicate the client's tech literacy. Only direct evidence counts.\n"
-            "15. Introvert/Extrovert: conversational engagement on a call is NOT sufficient. Return null.\n\n"
-            "ACTION ITEMS:\n"
-            "16. Only include explicit commitments ('I will...', 'Let's do...', 'Please send...') or "
-            "clearly assigned tasks. Do NOT include general discussion topics or advisor explanations.\n\n"
+            "4. Contradictions: if the transcript explicitly denies a value, do NOT use that figure — extract the correct value or null.\n"
+            "5. Suggestions ≠ facts: 'You should create a will' does NOT mean a will exists. Only confirmed past facts count.\n\n"
             "CONFIDENCE LEVELS — apply conservatively:\n"
-            "    exact_quote       – verbatim statement in transcript (use for direct quotes only)\n"
+            "    exact_quote       – verbatim statement in transcript (direct quotes only)\n"
             "    clearly_inferable – the ONLY logical conclusion from explicit evidence (rare)\n"
             "    estimated         – mentioned as a range or approximation\n"
-            "    indirect          – weak inference from behaviour/lifestyle (use sparingly, low bar for null)\n"
+            "    indirect          – weak inference from behaviour/lifestyle (low bar for null)\n"
             "    speculative       – highly uncertain; strongly prefer null over speculative\n\n"
+            "Each field below includes an Instruction with field-specific extraction rules. "
+            "Follow those instructions precisely.\n\n"
             "Respond with valid JSON only. No markdown, no prose outside JSON."
         )
 
