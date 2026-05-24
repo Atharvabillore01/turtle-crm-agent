@@ -3,10 +3,10 @@ Transcript Loader - Ingestion Module
 Supports .md and .txt transcript formats, including Hinglish and Devanagari content.
 """
 
+from collections import deque
 from pathlib import Path
 from typing import List, Dict
 import re
-import unicodedata
 
 
 # ── Format detectors / cleaners ───────────────────────────────────────────────
@@ -31,7 +31,9 @@ def _clean_speaker_timestamp_transcript(text: str) -> str:
         re.DOTALL,
     )
 
-    seen_texts: set = set()
+    # deque with maxlen keeps the last 20 seen utterances in insertion order
+    # (set.pop() was used before — sets are unordered, so pop() removed an arbitrary element)
+    seen_texts: deque = deque(maxlen=20)
     cleaned_lines: List[str] = []
 
     for m in pattern.finditer(text):
@@ -43,18 +45,11 @@ def _clean_speaker_timestamp_transcript(text: str) -> str:
         if not raw_msg:
             continue
 
-        # Normalise whitespace within the message
         msg = re.sub(r'\s+', ' ', raw_msg).strip()
 
-        # Dedup: skip if we've seen this exact text recently
-        # (transcription tools often repeat the same sentence 2-3 times)
         if msg in seen_texts:
             continue
-        seen_texts.add(msg)
-
-        # Limit dedup memory to last 20 utterances to allow genuine repetition later
-        if len(seen_texts) > 20:
-            seen_texts.pop()
+        seen_texts.append(msg)
 
         timestamp = f"{minutes}:{seconds:02d}"
         cleaned_lines.append(f"Speaker {speaker_num} [{timestamp}]: {msg}")

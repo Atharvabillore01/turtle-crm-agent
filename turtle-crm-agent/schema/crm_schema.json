@@ -13,7 +13,8 @@
       "entity_3": null,
       "source": "System",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 2,
@@ -24,7 +25,8 @@
       "entity_3": "Client",
       "source": "KC Booking",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 3,
@@ -35,7 +37,8 @@
       "entity_3": null,
       "source": "Meeting",
       "filled_by": null,
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 4,
@@ -46,7 +49,8 @@
       "entity_3": null,
       "source": "Risk Profile - DoB field",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 5,
@@ -57,7 +61,8 @@
       "entity_3": null,
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 6,
@@ -68,7 +73,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Extract the spouse's full name. Email addresses or usernames are NOT names — return null."
     },
     {
       "id": 7,
@@ -79,7 +85,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "System - Opp gender",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 8,
@@ -90,7 +97,8 @@
       "entity_3": null,
       "source": "Meetings (This shud be DoB field)",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Extract spouse's age in years as an integer. Return null if not explicitly stated."
     },
     {
       "id": 9,
@@ -101,7 +109,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Living in a country does NOT automatically mean tax residency there. Only extract if tax residency was explicitly discussed or confirmed. Format: 'Self: Country, Spouse: Country, Kids: Country' as applicable."
     },
     {
       "id": 10,
@@ -112,7 +121,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Extract citizenship country/countries — not current residence or tax residency. Format: 'Self: Country, Spouse: Country, Kids: Country' as applicable."
     },
     {
       "id": 11,
@@ -123,7 +133,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Client's hometown/city of origin in India. Return 'City, State' format."
     },
     {
       "id": 12,
@@ -134,7 +145,8 @@
       "entity_3": null,
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 13,
@@ -145,7 +157,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Number of children. Return an integer or null."
     },
     {
       "id": 14,
@@ -156,7 +169,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "City/state/country the client is currently living in and returning from."
     },
     {
       "id": 15,
@@ -167,7 +181,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Y only if client explicitly confirms their kids hold foreign citizenship. N if explicitly denied. Null if not discussed."
     },
     {
       "id": 16,
@@ -178,7 +193,8 @@
       "entity_3": null,
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 17,
@@ -189,7 +205,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Wedding anniversary date if explicitly mentioned. Return in DD/MM/YYYY format."
     },
     {
       "id": 18,
@@ -200,7 +217,8 @@
       "entity_3": null,
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 19,
@@ -211,7 +229,8 @@
       "entity_3": null,
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 20,
@@ -222,7 +241,8 @@
       "entity_3": "Client",
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 21,
@@ -233,7 +253,8 @@
       "entity_3": null,
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 22,
@@ -244,7 +265,8 @@
       "entity_3": "Client",
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 23,
@@ -255,7 +277,8 @@
       "entity_3": null,
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 24,
@@ -266,7 +289,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Nominee name for insurance or financial accounts if explicitly mentioned."
     },
     {
       "id": 25,
@@ -277,7 +301,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 26,
@@ -288,7 +313,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Beneficiary name for estate or financial accounts if explicitly mentioned."
     },
     {
       "id": 27,
@@ -299,7 +325,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 28,
@@ -310,7 +337,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Name of the client's insurance agent if mentioned."
     },
     {
       "id": 29,
@@ -321,7 +349,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 30,
@@ -332,7 +361,8 @@
       "entity_3": null,
       "source": "KC Booking",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 31,
@@ -343,7 +373,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "How the client was acquired — e.g. referral from X, LinkedIn, event, cold outreach."
     },
     {
       "id": 32,
@@ -354,7 +385,8 @@
       "entity_3": null,
       "source": "Onboarding",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 33,
@@ -365,7 +397,8 @@
       "entity_3": null,
       "source": "Onboarding",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 34,
@@ -376,7 +409,8 @@
       "entity_3": null,
       "source": "Onboarding",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 35,
@@ -387,7 +421,8 @@
       "entity_3": null,
       "source": "KC Booking",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 36,
@@ -398,7 +433,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Knowledge call taker's attitude assessment of the prospect (e.g. Warm, Cold, Neutral)."
     },
     {
       "id": 37,
@@ -409,7 +445,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Knowledge call taker's assessment of prospect's readiness to engage (H/M/L)."
     },
     {
       "id": 38,
@@ -420,7 +457,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Knowledge call taker's assessment of prospect's financial knowledge (H/M/L)."
     },
     {
       "id": 39,
@@ -431,7 +469,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Knowledge call taker's overall remark or note about the prospect."
     },
     {
       "id": 40,
@@ -442,7 +481,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Additional remark from KC taker (if different from field 39)."
     },
     {
       "id": 41,
@@ -453,7 +493,8 @@
       "entity_3": null,
       "source": "KC Booking",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 42,
@@ -464,7 +505,8 @@
       "entity_3": "Task",
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 43,
@@ -475,7 +517,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "TOTAL portfolio value in USD. If individual assets are listed (cash, EPF, equities, MF, gold, property), sum them. Return null if only a single transaction is mentioned with no broader portfolio context."
     },
     {
       "id": 44,
@@ -486,7 +529,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "TOTAL portfolio value in Indian Rupees. If individual assets are listed (cash, EPF, equities, MF, gold, property), sum them. Return null if only a single transaction is mentioned with no broader portfolio context."
     },
     {
       "id": 45,
@@ -497,7 +541,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Total outstanding debts and loans in USD. Include mortgages, personal loans, etc."
     },
     {
       "id": 46,
@@ -508,7 +553,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Total outstanding debts and loans in Indian Rupees. Include mortgages, personal loans, etc."
     },
     {
       "id": 47,
@@ -519,7 +565,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Client's take-home / net monthly salary in USD. Extract when advisor or client states net monthly earnings. Do NOT use gross salary or annual figures unless converted."
     },
     {
       "id": 48,
@@ -530,7 +577,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Client's take-home / net monthly salary in Indian Rupees. Extract when stated directly (e.g. 'we receive around 2.65 lakh'). Do NOT use gross salary or annual figures unless converted."
     },
     {
       "id": 49,
@@ -541,7 +589,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Regular monthly outflow / expenses in USD as stated by client."
     },
     {
       "id": 50,
@@ -552,7 +601,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Regular monthly outflow / expenses in Indian Rupees as stated by client."
     },
     {
       "id": 51,
@@ -563,7 +613,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Type of insurance policy (e.g. Term, ULIP, Endowment, Health). Extract only if explicitly mentioned."
     },
     {
       "id": 52,
@@ -574,7 +625,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Name of the insurance company. Extract only if explicitly mentioned."
     },
     {
       "id": 53,
@@ -585,7 +637,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Name of the specific insurance policy/plan. Extract only if explicitly mentioned."
     },
     {
       "id": 54,
@@ -596,7 +649,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "How the policy was purchased — Online or Offline."
     },
     {
       "id": 55,
@@ -607,7 +661,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Insurance coverage amount in Indian Rupees."
     },
     {
       "id": 56,
@@ -618,7 +673,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Insurance premium amount in Indian Rupees."
     },
     {
       "id": 57,
@@ -629,7 +685,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Policy renewal date. Return in DD/MM/YYYY format."
     },
     {
       "id": 58,
@@ -640,7 +697,8 @@
       "entity_3": null,
       "source": "Advisor",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 59,
@@ -651,7 +709,8 @@
       "entity_3": null,
       "source": "Advisor",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 60,
@@ -662,7 +721,8 @@
       "entity_3": null,
       "source": "Meeting + Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Y only if the client confirms a will already exists. Advisor's suggestion to create a will does NOT count — return null."
     },
     {
       "id": 61,
@@ -673,7 +733,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Y if client confirms they have a credit card. N if explicitly denied."
     },
     {
       "id": 62,
@@ -684,7 +745,8 @@
       "entity_3": "Credit_Card_Data",
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Name(s) of credit card(s) mentioned by client."
     },
     {
       "id": 63,
@@ -695,7 +757,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Issuing bank or company for the credit card (e.g. HDFC, Amex)."
     },
     {
       "id": 64,
@@ -706,7 +769,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Card network type (Visa, Mastercard, Diners, Amex)."
     },
     {
       "id": 65,
@@ -717,7 +781,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "List ALL banking partners/banks mentioned anywhere in the transcript. Check the full conversation — do not stop at the first mention."
     },
     {
       "id": 66,
@@ -728,7 +793,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Who holds the bank account — Self, Spouse, Kid, or Parent."
     },
     {
       "id": 67,
@@ -739,7 +805,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 68,
@@ -750,7 +817,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Number of vested ESOP/RSU units. Extract confirmed vested units only; do not infer from unvested grants."
     },
     {
       "id": 69,
@@ -761,7 +829,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Number of exercised ESOP units. Extract only if explicitly stated."
     },
     {
       "id": 70,
@@ -772,7 +841,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Fair Market Value per share in USD at the time of exercise."
     },
     {
       "id": 71,
@@ -783,7 +853,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Total value of ESOPs/RSUs in USD (units × FMV). Extract if explicitly stated or calculate if both components are given."
     },
     {
       "id": 72,
@@ -794,7 +865,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Fair Market Value per share in Indian Rupees."
     },
     {
       "id": 73,
@@ -805,7 +877,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Total value of ESOPs/RSUs in Indian Rupees."
     },
     {
       "id": 74,
@@ -816,7 +889,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Last financial year for which tax has been filed (e.g. 'FY 2023-24')."
     },
     {
       "id": 75,
@@ -827,7 +901,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Last month/year for which advance tax was paid (MM/YYYY)."
     },
     {
       "id": 76,
@@ -838,7 +913,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Tax penalty amount paid in the current financial year."
     },
     {
       "id": 77,
@@ -849,7 +925,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Tax interest amount paid in the current financial year."
     },
     {
       "id": 78,
@@ -860,7 +937,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Year the client started investing (e.g. '2010')."
     },
     {
       "id": 79,
@@ -871,7 +949,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Extract only if family planning is explicitly stated as a goal or plan. Advisor suggestions do not count."
     },
     {
       "id": 80,
@@ -882,7 +961,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Extract only if buying a house is explicitly stated as a goal. Advisor suggestions ('you should buy a house') do NOT count as a confirmed goal."
     },
     {
       "id": 81,
@@ -893,7 +973,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Children's education planning goals — only if explicitly discussed."
     },
     {
       "id": 82,
@@ -904,7 +985,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Retirement planning goals, timeline, or strategy if explicitly discussed."
     },
     {
       "id": 83,
@@ -915,7 +997,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Any other life goals explicitly stated by the client (custom free-text)."
     },
     {
       "id": 84,
@@ -926,7 +1009,8 @@
       "entity_3": null,
       "source": "Risk Profile",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Employment type: Salaried, Self Employed, On a break, or NA. Infer from context if clearly obvious."
     },
     {
       "id": 85,
@@ -937,7 +1021,8 @@
       "entity_3": null,
       "source": "KC Booking",
       "filled_by": "Manual/AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "LinkedIn profile URL if explicitly shared."
     },
     {
       "id": 86,
@@ -948,7 +1033,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Current employer / company name as stated by the client."
     },
     {
       "id": 87,
@@ -959,7 +1045,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Educational institution(s) the client attended (e.g. 'IIT Bombay', 'Harvard')."
     },
     {
       "id": 88,
@@ -970,7 +1057,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Previous employers or organisations the client has worked at."
     },
     {
       "id": 89,
@@ -981,7 +1069,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Client's own annual income as stated (gross or net — note which)."
     },
     {
       "id": 90,
@@ -992,7 +1081,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Spouse's annual income as stated."
     },
     {
       "id": 91,
@@ -1003,7 +1093,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "HUF annual income as stated."
     },
     {
       "id": 92,
@@ -1014,7 +1105,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Origin city/country for upcoming or recent travel if mentioned."
     },
     {
       "id": 93,
@@ -1025,7 +1117,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 94,
@@ -1036,7 +1129,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Destination city/country for upcoming or recent travel if mentioned."
     },
     {
       "id": 95,
@@ -1047,7 +1141,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 96,
@@ -1058,7 +1153,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 97,
@@ -1069,7 +1165,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 98,
@@ -1080,7 +1177,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Recurring windows the client has stated they are free for meetings (e.g. 'weekends are fine', 'mornings work before 10am'). A one-off rescheduling request is NOT recurring availability. 'I'm busy on weekends' or 'I have a call this weekend' means UNAVAILABLE — return null. Return null if no standing availability is explicitly stated."
     },
     {
       "id": 99,
@@ -1091,7 +1189,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Recurring availability windows the advisor mentioned they are free."
     },
     {
       "id": 100,
@@ -1102,7 +1201,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Capture ALL communication channels explicitly mentioned (WhatsApp, email, phone call, video call, etc.). Do not stop at the first mention — check the full transcript."
     },
     {
       "id": 101,
@@ -1113,7 +1213,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "P0 = highest priority action item. Only include explicit commitments ('I will...', 'Let's do...', 'Please send...') or clearly assigned tasks. Do NOT include general discussion topics or advisor explanations."
     },
     {
       "id": 102,
@@ -1124,7 +1225,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "P1 action item — second highest priority. Same rules as P0."
     },
     {
       "id": 103,
@@ -1135,7 +1237,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "P2 action item. Same rules as P0."
     },
     {
       "id": 104,
@@ -1146,7 +1249,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "P3 action item. Same rules as P0."
     },
     {
       "id": 105,
@@ -1157,7 +1261,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "P4 action item — lowest priority. Same rules as P0."
     },
     {
       "id": 106,
@@ -1168,7 +1273,8 @@
       "entity_3": null,
       "source": "Meetings + Conversations",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "List all explicit action items and commitments from the call. Include only statements like 'I will...', 'Let's do...', 'Please send...'. Do NOT include discussion topics or advisor explanations."
     },
     {
       "id": 107,
@@ -1179,7 +1285,8 @@
       "entity_3": null,
       "source": "Meetings + Conversations",
       "filled_by": "AI - mark task as closed",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 108,
@@ -1190,7 +1297,8 @@
       "entity_3": null,
       "source": "Meetings + Conversations",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 109,
@@ -1201,7 +1309,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": "will this bepart of tasks?"
+      "notes": "will this bepart of tasks?",
+      "extraction_instruction": ""
     },
     {
       "id": 110,
@@ -1212,7 +1321,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 111,
@@ -1223,7 +1333,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 112,
@@ -1234,7 +1345,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 113,
@@ -1245,7 +1357,8 @@
       "entity_3": null,
       "source": "Meetings + Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Overall sentiment of the client during this call: Positive, Neutral, or Negative. Provide a one-sentence explanation."
     },
     {
       "id": 114,
@@ -1256,7 +1369,8 @@
       "entity_3": null,
       "source": "Meetings + Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Explicit feedback or opinion the client gave about their Financial Planner."
     },
     {
       "id": 115,
@@ -1267,7 +1381,8 @@
       "entity_3": null,
       "source": "Meetings + Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Explicit feedback or opinion the client gave about their Tax Advisor."
     },
     {
       "id": 116,
@@ -1278,7 +1393,8 @@
       "entity_3": null,
       "source": "Meetings + Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Explicit feedback or opinion the client gave about their Estate Planner."
     },
     {
       "id": 117,
@@ -1289,7 +1405,8 @@
       "entity_3": null,
       "source": "Meetings + Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Explicit feedback or opinion the client gave about their Banking & Compliance Advisor."
     },
     {
       "id": 118,
@@ -1300,7 +1417,8 @@
       "entity_3": null,
       "source": "Meetings + Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Explicit feedback or opinion the client gave about their Insurance Advisor."
     },
     {
       "id": 119,
@@ -1311,7 +1429,8 @@
       "entity_3": null,
       "source": "Meetings + Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Explicit feedback or opinion the client gave about their Credit Card Advisor."
     },
     {
       "id": 120,
@@ -1322,7 +1441,8 @@
       "entity_3": null,
       "source": "Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Financial Planner's explicit feedback or observation about this client."
     },
     {
       "id": 121,
@@ -1333,7 +1453,8 @@
       "entity_3": null,
       "source": "Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Tax Advisor's explicit feedback or observation about this client."
     },
     {
       "id": 122,
@@ -1344,7 +1465,8 @@
       "entity_3": null,
       "source": "Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Estate Planner's explicit feedback or observation about this client."
     },
     {
       "id": 123,
@@ -1355,7 +1477,8 @@
       "entity_3": null,
       "source": "Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Insurance Advisor's explicit feedback or observation about this client."
     },
     {
       "id": 124,
@@ -1366,7 +1489,8 @@
       "entity_3": null,
       "source": "Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Banking & Compliance Advisor's explicit feedback or observation about this client."
     },
     {
       "id": 125,
@@ -1377,7 +1501,8 @@
       "entity_3": null,
       "source": "Conversation",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Credit Card Advisor's explicit feedback or observation about this client."
     },
     {
       "id": 126,
@@ -1388,7 +1513,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": ""
     },
     {
       "id": 127,
@@ -1399,7 +1525,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": ""
     },
     {
       "id": 128,
@@ -1410,7 +1537,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": ""
     },
     {
       "id": 129,
@@ -1421,7 +1549,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 130,
@@ -1432,7 +1561,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 131,
@@ -1443,7 +1573,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 132,
@@ -1454,7 +1585,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 133,
@@ -1465,7 +1597,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 134,
@@ -1476,7 +1609,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 135,
@@ -1487,7 +1621,8 @@
       "entity_3": null,
       "source": "Data Collection + Doc Extraction",
       "filled_by": "Manual + AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Names or types of insurance policies mentioned as documents/attachments."
     },
     {
       "id": 136,
@@ -1498,7 +1633,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": ""
     },
     {
       "id": 137,
@@ -1509,7 +1645,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": ""
     },
     {
       "id": 138,
@@ -1520,7 +1657,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 139,
@@ -1531,7 +1669,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 140,
@@ -1542,7 +1681,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 141,
@@ -1553,7 +1693,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 142,
@@ -1564,7 +1705,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 143,
@@ -1575,7 +1717,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Names of deliverables discussed (e.g. Financial Plan, Tax Plan) to be shared with client."
     },
     {
       "id": 144,
@@ -1586,7 +1729,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Turtle Relevance: H (high value, strong fit), M (moderate fit), L (low fit). Based on overall financial situation, goals, and engagement quality."
     },
     {
       "id": 145,
@@ -1597,7 +1741,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Prospect's attitude: Optimistic, Pessimistic, or Critical. Based on overall tone and outlook during the call."
     },
     {
       "id": 146,
@@ -1608,7 +1753,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Financial Acumen: H, M, or L. Demonstrated understanding of financial concepts. Confusion about basics (401k, fund transfers, tax concepts) = L or M."
     },
     {
       "id": 147,
@@ -1619,7 +1765,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Y if client has prior professional or significant personal experience in finance. N otherwise."
     },
     {
       "id": 148,
@@ -1630,7 +1777,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Y if client showed concern or sensitivity about fees, costs, or pricing. N if not mentioned."
     },
     {
       "id": 149,
@@ -1641,7 +1789,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": "Introvert or Extrovert. Conversational engagement on a call alone is NOT sufficient evidence. Return null unless strongly evidenced by explicit statements or clear behavioural patterns."
     },
     {
       "id": 150,
@@ -1652,7 +1801,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": ""
     },
     {
       "id": 151,
@@ -1663,7 +1813,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Custom tags for personal finance topics the client expressed interest in (comma-separated)."
     },
     {
       "id": 152,
@@ -1674,7 +1825,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Custom tags for observed cognitive/financial biases (e.g. 'loss aversion', 'anchoring')."
     },
     {
       "id": 153,
@@ -1685,7 +1837,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Investing style tags based on stated preferences (e.g. 'Long term investor', 'Return seeker', 'Explorer')."
     },
     {
       "id": 154,
@@ -1696,7 +1849,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Things the client explicitly expressed appreciation, comfort, or liking for."
     },
     {
       "id": 155,
@@ -1707,7 +1861,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Things the client explicitly expressed discomfort, concern, or dislike about."
     },
     {
       "id": 156,
@@ -1718,7 +1873,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Tech Savviness: H, M, or L based on the CLIENT's own demonstrated tech literacy only. A family member's profession (e.g. spouse is a data scientist) does NOT indicate the client's tech ability."
     },
     {
       "id": 157,
@@ -1729,7 +1885,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Execution Capability: H, M, or L. H requires demonstrated ability to execute complex financial/administrative tasks independently. Being proactive about planning does NOT automatically mean H. Confusion about basics (401k rollovers, fund transfers) = evidence of M."
     },
     {
       "id": 158,
@@ -1740,7 +1897,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": "Behavioural trait tags based on observed behaviour (e.g. 'Proactive', 'Diligent', 'Privacy freak')."
     },
     {
       "id": 159,
@@ -1751,7 +1909,8 @@
       "entity_3": null,
       "source": null,
       "filled_by": null,
-      "notes": "doubt"
+      "notes": "doubt",
+      "extraction_instruction": ""
     },
     {
       "id": 160,
@@ -1762,7 +1921,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 161,
@@ -1773,7 +1933,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 162,
@@ -1784,7 +1945,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 163,
@@ -1795,7 +1957,8 @@
       "entity_3": null,
       "source": "Data Collection",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 164,
@@ -1806,7 +1969,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 165,
@@ -1817,7 +1981,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 166,
@@ -1828,7 +1993,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 167,
@@ -1839,7 +2005,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 168,
@@ -1850,7 +2017,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 169,
@@ -1861,7 +2029,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 170,
@@ -1872,7 +2041,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 171,
@@ -1883,7 +2053,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 172,
@@ -1894,7 +2065,8 @@
       "entity_3": null,
       "source": "Ops Team",
       "filled_by": "Manual",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 173,
@@ -1905,7 +2077,8 @@
       "entity_3": null,
       "source": "Meetings + Conversations",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     },
     {
       "id": 174,
@@ -1916,7 +2089,8 @@
       "entity_3": null,
       "source": "Bookings",
       "filled_by": "System",
-      "notes": null
+      "notes": null,
+      "extraction_instruction": ""
     }
   ]
 }

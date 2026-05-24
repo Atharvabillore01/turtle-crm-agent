@@ -1,36 +1,43 @@
 """
-Audit Logger - Structured audit trail
-Logs all extraction operations with reasoning and confidence.
+Audit Logger — structured, rotating audit trail per client.
+Log directory comes from config so it is consistent everywhere.
 """
 
 import json
 import logging
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 from security.pii_guard import mask_pii, mask_pii_dict
+from config import AUDIT_LOG_DIR
 
 
 class AuditLogger:
-    """Structured audit logger for CRM extraction operations."""
-    
-    def __init__(self, client_id: str, log_dir: str = "./logs/audit"):
+    """Writes structured JSONL audit events for every extraction run."""
+
+    def __init__(self, client_id: str):
         self.client_id = client_id
-        self.log_dir = Path(log_dir)
-        self.log_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Setup logger
-        self.logger = logging.getLogger(f"turtle_audit_{client_id}")
-        
-        # Log file per client
-        log_file = self.log_dir / f"{client_id}_audit.jsonl"
-        handler = logging.FileHandler(log_file)
-        formatter = logging.Formatter('%(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(logging.INFO)
-    
+        log_dir = Path(AUDIT_LOG_DIR)
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        self.logger = logging.getLogger(f"turtle_audit.{client_id}")
+        if not self.logger.handlers:
+            handler = RotatingFileHandler(
+                log_dir / f"{client_id}_audit.jsonl",
+                maxBytes=10 * 1024 * 1024,   # 10 MB per file
+                backupCount=5,
+                encoding="utf-8",
+            )
+            handler.setFormatter(logging.Formatter("%(message)s"))
+            self.logger.addHandler(handler)
+            self.logger.setLevel(logging.INFO)
+            self.logger.propagate = False   # don't bubble to root logger
+
+    def _emit(self, event: dict) -> None:
+        self.logger.info(json.dumps(event, ensure_ascii=False))
+
     def log_extraction(
         self,
         field_id: int,
@@ -38,72 +45,45 @@ class AuditLogger:
         value: Any,
         confidence: float,
         source: str,
-        reasoning: str = None
+        reasoning: str = None,
     ) -> None:
-        """
-        Log a field extraction event.
-        
-        Args:
-            field_id: Field ID
-            field_name: Human-readable field name
-            value: Extracted value (will be PII-masked)
-            confidence: Confidence score 0.0-1.0
-            source: Quote or reference from transcript
-            reasoning: Explanation of extraction logic
-        """
-        event = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "client_id": self.client_id,
-            "event_type": "field_extraction",
-            "field_id": field_id,
-            "field_name": field_name,
-            "value": value,
-            "confidence": confidence,
+        self._emit({
+            "timestamp":      datetime.utcnow().isoformat(),
+            "client_id":      self.client_id,
+            "event_type":     "field_extraction",
+            "field_id":       field_id,
+            "field_name":     field_name,
+            "value":          mask_pii(str(value)) if value is not None else None,
+            "confidence":     confidence,
             "source_excerpt": mask_pii(source) if isinstance(source, str) else source,
-            "reasoning": reasoning,
-        }
-        
-        self.logger.info(json.dumps(event))
-    
-    def log_validation_error(
-        self,
-        field_id: int,
-        field_name: str,
-        value: Any,
-        error_reason: str
-    ) -> None:
-        """Log a field validation failure."""
-        event = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "client_id": self.client_id,
-            "event_type": "validation_error",
-            "field_id": field_id,
-            "field_name": field_name,
-            "value": value,
+            "reasoning":      reasoning,
+        })
+
+    def log_validation_error(self, field_id: int, field_name: str, value: Any, error_reason: str) -> None:
+        self._emit({
+            "timestamp":    datetime.utcnow().isoformat(),
+            "client_id":    self.client_id,
+            "event_type":   "validation_error",
+            "field_id":     field_id,
+            "field_name":   field_name,
+            "value":        mask_pii(str(value)) if value is not None else None,
             "error_reason": error_reason,
-        }
-        
-        self.logger.warning(json.dumps(event))
-    
+        })
+
     def log_agent_execution(
         self,
         agent_name: str,
         start_time: datetime,
         end_time: datetime,
         fields_processed: int,
-        errors: int = 0
+        errors: int = 0,
     ) -> None:
-        """Log execution of an extraction agent."""
-        duration_seconds = (end_time - start_time).total_seconds()
-        
-        event = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "client_id": self.client_id,
-            "event_type": "agent_execution",
-            "agent_name": agent_name,
-            "duration_seconds": duration_seconds,
+        self._emit({
+            "timestamp":       datetime.utcnow().isoformat(),
+            "client_id":       self.client_id,
+            "event_type":      "agent_execution",
+            "agent_name":      agent_name,
+            "duration_seconds": round((end_time - start_time).total_seconds(), 3),
             "fields_processed": fields_processed,
-            "errors": errors,
-        }
-        
-        self.logger.info(json.dumps(event))
+            "errors":          errors,
+        })
