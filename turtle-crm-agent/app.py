@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 
+from config import PRIMARY_MODEL
 from services.extraction_service import run_extraction, process_live_transcript_chunk
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -21,7 +22,7 @@ app = FastAPI(
         "AI-powered CRM field extraction from financial advisory call transcripts.\n\n"
         "Supports **English**, **Hindi (Devanagari)**, and **Hinglish**.\n"
         "Extracts up to **174 CRM parameters** with confidence scores and source quotes.\n\n"
-        "Called by the Node.js `crm-service` backend."
+        "Called by the `meeting-service` transcript processor."
     ),
     version="1.0.0",
 )
@@ -29,21 +30,24 @@ app = FastAPI(
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
+class ExtractContext(BaseModel):
+    client_id: Optional[str] = Field(None, example="client_1")
+    agenda: Optional[str] = Field(None, example="Discovery call")
+    # Canonical CRM-agent agent names (e.g. "DemographicsAgent"). Empty = run all.
+    agents_to_use: list[str] = Field(default_factory=list)
+
+
 class ExtractRequest(BaseModel):
-    client_id: str = Field(..., example="client_1", description="Unique client identifier")
-    client_name: Optional[str] = Field(None, example="Rahul Sharma", description="Human-readable client name")
     transcript: str = Field(
         ...,
         description=(
-            "Full conversation transcript. Supports English, Hindi, and Hinglish. "
-            "Accepted formats:\n"
-            "- Plain: `Speaker N [MM:SS]: text`\n"
-            "- Markdown: `**Name** *[timestamp]*: text`"
+            "Full conversation transcript. Supports English, Hindi, and Hinglish."
         ),
-        example="Speaker 1 [0:00]: Hi Rahul.\nSpeaker 2 [0:05]: I work at Google in Bangalore, earning 3.5 lakh per month.",
+        example="Speaker 1 [0:00]: Hi Rahul.\nSpeaker 2 [0:05]: I work at Google in Bangalore.",
     )
-    mode: str = Field("prod", example="prod", description="'dev' for testing, 'prod' for production")
-    model: Optional[str] = Field(None, example="claude-opus-4-6", description="Override LLM model for this request only")
+    meeting_id: Optional[str] = Field(None, example="mtg_123")
+    context: ExtractContext = Field(default_factory=ExtractContext)
+    model: Optional[str] = Field(None, example="claude-opus-4-7")
 
 
 class ChunkRequest(BaseModel):
@@ -60,7 +64,6 @@ def root():
 
 @app.get("/health", tags=["System"], summary="Health check")
 def health():
-    """Returns `200 OK` when the service is running."""
     return {"status": "ok"}
 
 
@@ -68,43 +71,39 @@ def health():
     "/extract",
     tags=["Extraction"],
     summary="Extract CRM fields from a transcript",
-    response_description="Extracted fields with confidence >= threshold, token usage, and processing time",
+    response_description="Extraction with model, duration, and fields dict keyed by field id",
 )
 def extract(req: ExtractRequest):
     """
-    Runs all extraction agents on the supplied transcript:
+    Runs the CRM extraction agents on the supplied transcript. The set of
+    agents run is controlled by `context.agents_to_use` — empty list runs all.
 
-    | Agent | Touch Point |
-    |---|---|
-    | DemographicsAgent | Demographics & Family |
-    | FinanceAgent | Finances |
-    | GoalsAgent | Life Goals |
-    | ProfessionalAgent | Professional Details |
-    | ScheduleAgent | Schedule & Communication |
-    | QualitativeAgent | Qualitative Parameters |
-    | TaskAgent | Task Priority |
-    | FeedbackAgent | Custom Fields |
+    Agent names (canonical):
+        DemographicsAgent, FinanceAgent, GoalsAgent, ProfessionalAgent,
+        ScheduleAgent, QualitativeAgent, TaskAgent, FeedbackAgent
 
-    Returns only fields with **confidence >= CONFIDENCE_THRESHOLD** (default 0.70).
-    Also persists JSON, Excel, and HTML artefacts to the `output/` folder.
+    Response shape (consumed by meeting-service transcript_processor):
+        {
+          "meeting_id": str | null,
+          "model": str,
+          "duration_seconds": float,
+          "fields": { "<field_id>": {...}, ... },
+          "token_usage": {...}
+        }
     """
-    if req.mode not in ("dev", "prod"):
-        raise HTTPException(status_code=400, detail="mode must be 'dev' or 'prod'")
-
     try:
-        result = run_extraction(
-            client_id=req.client_id,
-            client_name=req.client_name or "",
+        return run_extraction(
             transcript=req.transcript,
-            mode=req.mode,
-            model=req.model,
+            meeting_id=req.meeting_id,
+            client_id=req.context.client_id or "",
+            agenda=req.context.agenda or "",
+            agents_to_use=req.context.agents_to_use,
+            model=req.model or PRIMARY_MODEL,
         )
-        return result
-
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except RuntimeError as exc:
-        logger.error("Extraction error client=%s: %s", req.client_id, exc)
+        logger.error("Extraction error meeting=%s: %s", req.meeting_id, exc)
         raise HTTPException(status_code=500, detail=str(exc))
 
 
@@ -112,17 +111,10 @@ def extract(req: ExtractRequest):
     "/transcript/chunk",
     tags=["Streaming"],
     summary="Submit a live transcript chunk (placeholder)",
-    response_description="Acknowledgement with chunk length",
 )
 def transcript_chunk(req: ChunkRequest):
-    """
-    **Placeholder** for Fireflies / live call-streaming integration.
-
-    Currently logs the chunk. Will support incremental CRM extraction in a future release.
-    """
     if not req.chunk.strip():
         raise HTTPException(status_code=400, detail="chunk must not be empty")
-
     process_live_transcript_chunk(req.chunk, req.client_id or "")
     return {"status": "received", "length": len(req.chunk)}
 

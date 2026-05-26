@@ -40,6 +40,18 @@ _AGENT_TOUCH_POINTS: Dict[str, List[str]] = {
 
 _EMPTY_USAGE = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
+# Map canonical CRM-agent names (sent by meeting-service) → internal keys.
+_AGENT_NAME_TO_KEY: Dict[str, str] = {
+    'DemographicsAgent': 'demographics',
+    'FinanceAgent':      'finance',
+    'GoalsAgent':        'goals',
+    'ProfessionalAgent': 'professional',
+    'ScheduleAgent':     'schedule',
+    'QualitativeAgent':  'qualitative',
+    'TaskAgent':         'task',
+    'FeedbackAgent':     'feedback',
+}
+
 
 class Orchestrator:
     """
@@ -69,10 +81,11 @@ class Orchestrator:
     def orchestrate(
         self,
         transcript_paths: List[str],
-        document_paths: List[str] = None,   # reserved for future PDF/Excel ingestion
+        agents_to_use: List[str] = None,
     ) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
         """
-        Run the full extraction pipeline.
+        Run the extraction pipeline. If `agents_to_use` is non-empty, only the
+        listed agents run — names are canonical (e.g. "DemographicsAgent").
 
         Returns:
             (combined_results, per_agent_results, token_usage)
@@ -82,28 +95,35 @@ class Orchestrator:
         full_context = concatenate_transcripts(transcript_paths)
         logger.info("Loaded %d transcript(s)", len(transcript_paths))
 
+        selected_keys = self._resolve_selection(agents_to_use)
+        logger.info("Agents selected: %s", sorted(selected_keys))
+
         results: Dict[str, Any] = {}
         per_agent: Dict[str, Dict[str, Any]] = {}
         token_usage: Dict[str, Dict[str, int]] = {}
 
         # Phase 1: Core agents (order-independent)
         for name in ['demographics', 'finance', 'goals', 'professional', 'schedule', 'qualitative']:
+            if name not in selected_keys:
+                continue
             agent_fields, usage = self._run_agent(name, full_context)
             per_agent[name] = agent_fields
             token_usage[name] = usage
             results.update(agent_fields)
 
         # Phase 2: Task (needs phase-1 context)
-        task_fields, usage = self._run_agent('task', full_context, previous=results)
-        per_agent['task'] = task_fields
-        token_usage['task'] = usage
-        results.update(task_fields)
+        if 'task' in selected_keys:
+            task_fields, usage = self._run_agent('task', full_context, previous=results)
+            per_agent['task'] = task_fields
+            token_usage['task'] = usage
+            results.update(task_fields)
 
         # Phase 3: Feedback / sentiment
-        feedback_fields, usage = self._run_agent('feedback', full_context)
-        per_agent['feedback'] = feedback_fields
-        token_usage['feedback'] = usage
-        results.update(feedback_fields)
+        if 'feedback' in selected_keys:
+            feedback_fields, usage = self._run_agent('feedback', full_context)
+            per_agent['feedback'] = feedback_fields
+            token_usage['feedback'] = usage
+            results.update(feedback_fields)
 
         # Phase 4: Deterministic system fields (no LLM)
         system_fields = SystemResolver.resolve_system_fields(self.client_id)
@@ -132,6 +152,20 @@ class Orchestrator:
         return results, per_agent, token_usage
 
     # ── Private helpers ───────────────────────────────────────────────────────
+
+    def _resolve_selection(self, agents_to_use: List[str] = None) -> set:
+        """Empty/None ⇒ run every agent. Otherwise map canonical names to keys."""
+        all_keys = set(self.agents.keys())
+        if not agents_to_use:
+            return all_keys
+        keys: set = set()
+        for name in agents_to_use:
+            key = _AGENT_NAME_TO_KEY.get(name)
+            if key and key in self.agents:
+                keys.add(key)
+            else:
+                logger.warning("Unknown agent in agents_to_use: %r — skipping", name)
+        return keys or all_keys
 
     def _run_agent(
         self,

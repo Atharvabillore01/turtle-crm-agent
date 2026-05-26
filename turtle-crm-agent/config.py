@@ -98,7 +98,7 @@ DATA_DIR = get_data_path()  # data/conversations
 MAX_CONTEXT_TOKENS = 180000
 
 # Input file validation
-ALLOWED_EXTENSIONS = {'.md', '.pdf', '.xlsx', '.xls', '.csv', '.txt'}
+ALLOWED_EXTENSIONS = {'.md', '.pdf', '.csv', '.txt'}
 MAX_FILE_SIZE_MB = 50
 
 # ============================================================================
@@ -119,7 +119,7 @@ REVIEW_THRESHOLD = CONFIDENCE_THRESHOLD  # 0.70 default
 
 # Confidence score mapping
 # Single source of truth for confidence label → numeric score.
-# Used by agents (base_agent.py) and the comparison Excel.
+# Used by agents (base_agent.py).
 CONFIDENCE_SCORES = {
     "exact_quote":      0.95,
     "clearly_inferable": 0.80,
