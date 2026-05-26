@@ -1,85 +1,126 @@
 """
-Flask API server for the Turtle CRM Field-Filler Agent.
-Exposes a single endpoint: POST /extract
+Turtle CRM Extraction API — FastAPI
+Swagger UI auto-generated at http://localhost:5000/docs
 """
 
-import json
-import tempfile
-from pathlib import Path
-from datetime import datetime
-from flask import Flask, request, jsonify, send_from_directory
+import logging
+from typing import Optional
 
-from agents.orchestrator import Orchestrator
-from utils.html_export import generate_html_report
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
+from pydantic import BaseModel, Field
 
-app = Flask(__name__, static_folder="static")
+from config import PRIMARY_MODEL
+from services.extraction_service import run_extraction, process_live_transcript_chunk
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+app = FastAPI(
+    title="Turtle CRM Extraction API",
+    description=(
+        "AI-powered CRM field extraction from financial advisory call transcripts.\n\n"
+        "Supports **English**, **Hindi (Devanagari)**, and **Hinglish**.\n"
+        "Extracts up to **174 CRM parameters** with confidence scores and source quotes.\n\n"
+        "Called by the `meeting-service` transcript processor."
+    ),
+    version="1.0.0",
+)
 
 
-@app.route("/")
-def index():
-    return send_from_directory("static", "index.html")
+# ── Schemas ───────────────────────────────────────────────────────────────────
+
+class ExtractContext(BaseModel):
+    client_id: Optional[str] = Field(None, example="client_1")
+    agenda: Optional[str] = Field(None, example="Discovery call")
+    # Canonical CRM-agent agent names (e.g. "DemographicsAgent"). Empty = run all.
+    agents_to_use: list[str] = Field(default_factory=list)
 
 
-@app.route("/extract", methods=["POST"])
-def extract():
-    data = request.get_json()
-    client_id = data.get("client_id", "manual_input").strip() or "manual_input"
-    transcript_text = data.get("transcript", "").strip()
-    model = data.get("model", None)
+class ExtractRequest(BaseModel):
+    transcript: str = Field(
+        ...,
+        description=(
+            "Full conversation transcript. Supports English, Hindi, and Hinglish."
+        ),
+        example="Speaker 1 [0:00]: Hi Rahul.\nSpeaker 2 [0:05]: I work at Google in Bangalore.",
+    )
+    meeting_id: Optional[str] = Field(None, example="mtg_123")
+    context: ExtractContext = Field(default_factory=ExtractContext)
+    model: Optional[str] = Field(None, example="claude-opus-4-7")
 
-    if not transcript_text:
-        return jsonify({"error": "transcript is required"}), 400
 
-    # Write transcript to a temp file so the existing pipeline can read it
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".md", delete=False, encoding="utf-8"
-    ) as tmp:
-        tmp.write(transcript_text)
-        tmp_path = tmp.name
+class ChunkRequest(BaseModel):
+    client_id: Optional[str] = Field(None, example="client_1")
+    chunk: str = Field(..., example="Speaker 1 [1:32]: What is your monthly income?")
 
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
+
+
+@app.get("/health", tags=["System"], summary="Health check")
+def health():
+    return {"status": "ok"}
+
+
+@app.post(
+    "/extract",
+    tags=["Extraction"],
+    summary="Extract CRM fields from a transcript",
+    response_description="Extraction with model, duration, and fields dict keyed by field id",
+)
+def extract(req: ExtractRequest):
+    """
+    Runs the CRM extraction agents on the supplied transcript. The set of
+    agents run is controlled by `context.agents_to_use` — empty list runs all.
+
+    Agent names (canonical):
+        DemographicsAgent, FinanceAgent, GoalsAgent, ProfessionalAgent,
+        ScheduleAgent, QualitativeAgent, TaskAgent, FeedbackAgent
+
+    Response shape (consumed by meeting-service transcript_processor):
+        {
+          "meeting_id": str | null,
+          "model": str,
+          "duration_seconds": float,
+          "fields": { "<field_id>": {...}, ... },
+          "token_usage": {...}
+        }
+    """
     try:
-        orchestrator = Orchestrator(client_id, model=model)
-        start = datetime.now()
-        results, per_agent, token_usage = orchestrator.orchestrate(transcript_paths=[tmp_path])
-        duration = round((datetime.now() - start).total_seconds(), 2)
-    finally:
-        Path(tmp_path).unlink(missing_ok=True)
+        return run_extraction(
+            transcript=req.transcript,
+            meeting_id=req.meeting_id,
+            client_id=req.context.client_id or "",
+            agenda=req.context.agenda or "",
+            agents_to_use=req.context.agents_to_use,
+            model=req.model or PRIMARY_MODEL,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except RuntimeError as exc:
+        logger.error("Extraction error meeting=%s: %s", req.meeting_id, exc)
+        raise HTTPException(status_code=500, detail=str(exc))
 
-    # Save to output dir as well
-    from config import LLM_PROVIDER
-    from main import _write_excel, _update_comparison_excel
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    used_model = model or orchestrator.model
-    safe_model = used_model.replace("/", "-").replace(":", "-")
-    run_dir = Path("output") / f"{LLM_PROVIDER}_{safe_model}_{ts}"
-    run_dir.mkdir(parents=True, exist_ok=True)
 
-    base = {
-        "client_id": client_id,
-        "provider": LLM_PROVIDER,
-        "model": used_model,
-        "extracted_at": datetime.now().isoformat(),
-        "duration_seconds": duration,
-        "token_usage": token_usage,
-    }
+@app.post(
+    "/transcript/chunk",
+    tags=["Streaming"],
+    summary="Submit a live transcript chunk (placeholder)",
+)
+def transcript_chunk(req: ChunkRequest):
+    if not req.chunk.strip():
+        raise HTTPException(status_code=400, detail="chunk must not be empty")
+    process_live_transcript_chunk(req.chunk, req.client_id or "")
+    return {"status": "received", "length": len(req.chunk)}
 
-    for agent_name, agent_fields in per_agent.items():
-        with open(run_dir / f"{client_id}_{agent_name}.json", "w", encoding="utf-8") as f:
-            json.dump({**base, "agent": agent_name, "total_fields": len(agent_fields), "fields": agent_fields}, f, indent=2, ensure_ascii=False)
 
-    combined_payload = {**base, "total_fields": len(results), "fields": results}
-    with open(run_dir / f"{client_id}_combined.json", "w", encoding="utf-8") as f:
-        json.dump(combined_payload, f, indent=2, ensure_ascii=False)
-
-    _write_excel(run_dir / f"{client_id}_extraction.xlsx", client_id, used_model, results, per_agent)
-    generate_html_report(run_dir / f"{client_id}_report.html", client_id, used_model, results)
-
-    comparison_file = Path("output") / f"{client_id}_model_comparison.xlsx"
-    _update_comparison_excel(comparison_file, LLM_PROVIDER, used_model, results, per_agent)
-
-    # Return combined results in the API response
-    return jsonify(combined_payload)
-
+# ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=5000, reload=True)

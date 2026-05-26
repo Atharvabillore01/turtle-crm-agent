@@ -10,7 +10,6 @@ from .transcript_loader import (
 from .document_parser import (
     parse_document,
     parse_pdf,
-    parse_excel,
     parse_markdown,
     parse_text,
     parse_csv,
@@ -25,7 +24,6 @@ __all__ = [
     # Document parsing
     'parse_document',
     'parse_pdf',
-    'parse_excel',
     'parse_markdown',
     'parse_text',
     'parse_csv',

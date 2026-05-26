@@ -6,9 +6,7 @@ Validates files before any parsing occurs.
 from pathlib import Path
 from typing import List
 
-
-ALLOWED_EXTENSIONS = {'.md', '.pdf', '.xlsx', '.xls', '.csv', '.txt'}
-MAX_FILE_SIZE_MB = 50
+from config import ALLOWED_EXTENSIONS, MAX_FILE_SIZE_MB
 
 
 def validate_file(filepath: str) -> bool:

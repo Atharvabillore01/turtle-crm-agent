@@ -98,7 +98,7 @@ DATA_DIR = get_data_path()  # data/conversations
 MAX_CONTEXT_TOKENS = 180000
 
 # Input file validation
-ALLOWED_EXTENSIONS = {'.md', '.pdf', '.xlsx', '.xls', '.csv', '.txt'}
+ALLOWED_EXTENSIONS = {'.md', '.pdf', '.csv', '.txt'}
 MAX_FILE_SIZE_MB = 50
 
 # ============================================================================
@@ -118,12 +118,15 @@ PRIORITY_FIELDS = [
 REVIEW_THRESHOLD = CONFIDENCE_THRESHOLD  # 0.70 default
 
 # Confidence score mapping
-CONFIDENCE_RANGES = {
-    "exact_quote": (0.90, 0.99),           # Explicit statement in transcript
-    "clearly_inferable": (0.70, 0.89),     # Clear from context
-    "estimated": (0.50, 0.69),             # Approximate or range
-    "indirect": (0.30, 0.49),              # Inferred from lifestyle/behavior
-    "speculative": (0.00, 0.29),           # Not mentioned / low confidence
+# Single source of truth for confidence label → numeric score.
+# Used by agents (base_agent.py).
+CONFIDENCE_SCORES = {
+    "exact_quote":      0.95,
+    "clearly_inferable": 0.80,
+    "estimated":        0.60,
+    "indirect":         0.40,
+    "speculative":      0.15,
+    "not_extracted":    0.00,
 }
 
 # ============================================================================
