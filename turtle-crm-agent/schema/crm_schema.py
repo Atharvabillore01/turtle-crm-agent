@@ -1,7 +1,7 @@
 """
 CRM Schema Module
 Dynamic schema loader - supports any number of CRM fields
-Loads from crm_schema.json (extracted from 174 param.xlsx)
+Loads from crm_schema.json
 
 Fields are organized by:
 - Touch Point: Category grouping (e.g., Demographics & Family)

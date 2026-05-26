@@ -72,7 +72,7 @@ Examples:
     )
     parser.add_argument("--client",        required=True, help="Client ID (e.g. client_1)")
     parser.add_argument("--transcripts",   required=True, help="Directory with .md / .txt transcript files")
-    parser.add_argument("--documents",     help="Directory with supporting PDFs / Excel (optional)")
+    parser.add_argument("--documents",     help="Directory with supporting PDFs (optional)")
     parser.add_argument("--priority-only", action="store_true", help="Extract Phase 1 priority fields only")
     parser.add_argument("--output",        default=str(get_output_path()), help="Output directory root")
     parser.add_argument("--model",         default=PRIMARY_MODEL, help=f"LLM model (default: {PRIMARY_MODEL})")
