@@ -73,7 +73,7 @@ def health():
     summary="Extract CRM fields from a transcript",
     response_description="Extraction with model, duration, and fields dict keyed by field id",
 )
-def extract(req: ExtractRequest):
+async def extract(req: ExtractRequest):
     """
     Runs the CRM extraction agents on the supplied transcript. The set of
     agents run is controlled by `context.agents_to_use` — empty list runs all.
@@ -90,9 +90,15 @@ def extract(req: ExtractRequest):
           "fields": { "<field_id>": {...}, ... },
           "token_usage": {...}
         }
+
+    `run_extraction` is sync (uses blocking LLM client calls). We offload
+    it to a thread so this endpoint doesn't pin a FastAPI worker for the
+    full LLM duration.
     """
+    import asyncio
     try:
-        return run_extraction(
+        return await asyncio.to_thread(
+            run_extraction,
             transcript=req.transcript,
             meeting_id=req.meeting_id,
             client_id=req.context.client_id or "",
