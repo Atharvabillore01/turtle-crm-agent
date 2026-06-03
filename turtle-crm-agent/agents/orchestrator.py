@@ -17,6 +17,7 @@ from agents import (
     ScheduleAgent,
     TaskAgent,
     FeedbackAgent,
+    AdvisoryAgent,
     SystemResolver,
 )
 from security import AuditLogger
@@ -35,6 +36,7 @@ _AGENT_TOUCH_POINTS: Dict[str, List[str]] = {
     'schedule':     ['Schedule & Communication'],
     'task':         ['Task Priority'],
     'feedback':     ['Custom Fields (text)'],
+    'advisory':     ['AI Advisory'],
     'system':       [],
 }
 
@@ -50,6 +52,7 @@ _AGENT_NAME_TO_KEY: Dict[str, str] = {
     'QualitativeAgent':  'qualitative',
     'TaskAgent':         'task',
     'FeedbackAgent':     'feedback',
+    'AdvisoryAgent':     'advisory',
 }
 
 
@@ -74,6 +77,7 @@ class Orchestrator:
             'schedule':     ScheduleAgent(client_id, model),
             'task':         TaskAgent(client_id, model),
             'feedback':     FeedbackAgent(client_id, model),
+            'advisory':     AdvisoryAgent(client_id, model),
         }
 
     # ── Public API ────────────────────────────────────────────────────────────
@@ -82,13 +86,21 @@ class Orchestrator:
         self,
         transcript_paths: List[str],
         agents_to_use: List[str] = None,
-    ) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+        agenda: str = "",
+    ) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
         """
         Run the extraction pipeline. If `agents_to_use` is non-empty, only the
         listed agents run — names are canonical (e.g. "DemographicsAgent").
 
+        `agenda` is the meeting agenda; it is used only by the advisory call
+        analysis (never stored as a CRM field).
+
         Returns:
-            (combined_results, per_agent_results, token_usage)
+            (combined_results, per_agent_results, token_usage, call_analysis)
+
+        `call_analysis` is a standalone advisor-coaching report — NOT one of the
+        CRM fields. It is {} when the advisory agent did not run or had nothing
+        meaningful to say.
         """
         logger.info("Starting extraction for client %s", self.client_id)
 
@@ -125,6 +137,29 @@ class Orchestrator:
             token_usage['feedback'] = usage
             results.update(feedback_fields)
 
+        # Phase 3.5: Advisory (generative) — fills the 'AI Advisory' schema
+        # fields AND produces a SEPARATE advisor-coaching report. The report is
+        # deliberately not a CRM field; it is returned as `call_analysis`.
+        call_analysis: Dict[str, Any] = {}
+        if 'advisory' in selected_keys:
+            advisory_agent = self.agents['advisory']
+            try:
+                advisory_fields = advisory_agent.run(full_context, results)
+            except Exception as exc:
+                logger.warning("advisory agent failed: %s", exc, exc_info=True)
+                advisory_fields = {}
+            try:
+                call_analysis = advisory_agent.analyze_call(
+                    full_context, agenda=agenda, previous_results=results,
+                )
+            except Exception as exc:
+                logger.warning("advisory call analysis failed: %s", exc, exc_info=True)
+                call_analysis = {}
+            # agent.usage is cumulative across both LLM calls above
+            per_agent['advisory'] = advisory_fields
+            token_usage['advisory'] = dict(getattr(advisory_agent, 'usage', _EMPTY_USAGE))
+            results.update(advisory_fields)
+
         # Phase 4: Deterministic system fields (no LLM)
         system_fields = SystemResolver.resolve_system_fields(self.client_id)
         per_agent['system'] = system_fields
@@ -140,16 +175,17 @@ class Orchestrator:
             "total_tokens":  total_in + total_out,
         }
 
-        # Enrich with schema metadata and fill all 174 fields
+        # Enrich with schema metadata and fill all schema fields
         results = self._enrich_all(results)
         for name, fields in per_agent.items():
             per_agent[name] = self._enrich_agent(name, fields)
 
         logger.info(
-            "Extraction complete — %d fields | tokens in=%d out=%d total=%d",
+            "Extraction complete — %d fields | tokens in=%d out=%d total=%d | call_analysis=%s",
             len(results), total_in, total_out, total_in + total_out,
+            "yes" if call_analysis else "no",
         )
-        return results, per_agent, token_usage
+        return results, per_agent, token_usage, call_analysis
 
     # ── Private helpers ───────────────────────────────────────────────────────
 

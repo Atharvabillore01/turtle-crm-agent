@@ -60,21 +60,35 @@ def _temp_transcript_files(chunks: list[str]):
 
 
 def _filter_fields(fields: dict, threshold: float) -> dict:
-    """Keep only fields whose confidence >= threshold."""
+    """
+    Keep fields whose confidence >= threshold, then shape each value to match
+    what sp_save_extraction reads.
+
+    Keys are snake_case (`confidence_level`) and include `agent` — the SP reads
+    `value`, `confidence`, `confidence_level`, `source`, `agent` and ignores the
+    rest. (`attribute`/`touch_point` are re-derived from field_definitions on
+    read, so they are informational only here.)
+
+    AdvisoryAgent fields are GENERATED, not extracted: the agent already returns
+    null when it has nothing well-grounded to say, so a surviving value is
+    intentional. They bypass the confidence threshold and are never dropped here.
+    """
     out = {}
     for fid, data in fields.items():
         if not isinstance(data, dict):
             continue
-        if (data.get("confidence") or 0.0) < threshold:
+        is_advisory = data.get("agent") == "AdvisoryAgent"
+        if not is_advisory and (data.get("confidence") or 0.0) < threshold:
             continue
         out[fid] = {
-            "fieldId":         fid,
-            "attribute":       data.get("attribute", ""),
-            "touchPoint":      data.get("touch_point", ""),
-            "value":           data.get("value"),
-            "confidence":      data.get("confidence"),
-            "confidenceLevel": data.get("confidence_level", ""),
-            "source":          data.get("source", ""),
+            "fieldId":          fid,
+            "attribute":        data.get("attribute", ""),
+            "touch_point":      data.get("touch_point", ""),
+            "value":            data.get("value"),
+            "confidence":       data.get("confidence"),
+            "confidence_level": data.get("confidence_level", ""),
+            "source":           data.get("source", ""),
+            "agent":            data.get("agent", ""),
         }
     return out
 
@@ -86,6 +100,7 @@ def _persist_outputs(
     per_agent: dict,
     token_usage: dict,
     duration: float,
+    call_analysis: dict = None,
 ) -> None:
     """Save run artefacts to disk. Errors are logged, never raised."""
     try:
@@ -113,7 +128,8 @@ def _persist_outputs(
             )
 
         (run_dir / f"{client_id or 'unknown'}_combined.json").write_text(
-            json.dumps({**base_meta, "total_fields": len(results), "fields": results},
+            json.dumps({**base_meta, "total_fields": len(results), "fields": results,
+                        "call_analysis": call_analysis or {}},
                        indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
@@ -141,7 +157,8 @@ def run_extraction(
     Response shape (consumed by meeting-service transcript_processor):
         {
           meeting_id, model, duration_seconds, token_usage,
-          fields: { "<field_id>": {...filtered field...}, ... }
+          fields: { "<field_id>": {...filtered field...}, ... },
+          call_analysis: { ... }   # standalone advisor coaching, NOT a field
         }
     """
     if not transcript or not transcript.strip():
@@ -156,9 +173,10 @@ def run_extraction(
     try:
         with _temp_transcript_files(chunks) as tmp_paths:
             orchestrator = Orchestrator(client_id or meeting_id or "unknown", model=used_model)
-            results, per_agent, token_usage = orchestrator.orchestrate(
+            results, per_agent, token_usage, call_analysis = orchestrator.orchestrate(
                 transcript_paths=tmp_paths,
                 agents_to_use=agents_to_use,
+                agenda=agenda,
             )
     except Exception as exc:
         logger.exception("Orchestrator failed for meeting=%s", meeting_id)
@@ -167,7 +185,7 @@ def run_extraction(
     duration = round((datetime.now() - start).total_seconds(), 2)
 
     _persist_outputs(client_id or meeting_id or "unknown",
-                     used_model, results, per_agent, token_usage, duration)
+                     used_model, results, per_agent, token_usage, duration, call_analysis)
 
     filtered = _filter_fields(results, threshold)
 
@@ -182,4 +200,5 @@ def run_extraction(
         "total_fields":     len(filtered),
         "fields":           filtered,
         "token_usage":      token_usage,
+        "call_analysis":    call_analysis,
     }
