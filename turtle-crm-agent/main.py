@@ -25,6 +25,7 @@ def _persist_run(
     token_usage: dict,
     duration: float,
     output_root: Path,
+    call_analysis: dict = None,
 ) -> Path:
     """Save JSON and HTML artefacts for one run. Returns the run directory."""
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -50,12 +51,21 @@ def _persist_run(
             encoding="utf-8",
         )
 
-    # Combined JSON
+    # Combined JSON — call_analysis is a separate top-level key, NOT a field
     (run_dir / f"{client_id}_combined.json").write_text(
-        json.dumps({**base_meta, "total_fields": len(results), "fields": results},
+        json.dumps({**base_meta, "total_fields": len(results), "fields": results,
+                    "call_analysis": call_analysis or {}},
                    indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
+
+    # Standalone advisor-coaching report
+    if call_analysis:
+        (run_dir / f"{client_id}_call_analysis.json").write_text(
+            json.dumps({**base_meta, "call_analysis": call_analysis},
+                       indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
 
     return run_dir
 
@@ -97,13 +107,14 @@ Examples:
     start = datetime.now()
 
     try:
-        results, per_agent, token_usage = orchestrator.orchestrate(
+        results, per_agent, token_usage, call_analysis = orchestrator.orchestrate(
             transcript_paths=[str(f) for f in transcript_files],
         )
         duration = (datetime.now() - start).total_seconds()
         logger.info("Extraction complete in %.1fs — %d fields", duration, len(results))
 
-        run_dir = _persist_run(args.client, args.model, results, per_agent, token_usage, duration, output_root)
+        run_dir = _persist_run(args.client, args.model, results, per_agent, token_usage,
+                               duration, output_root, call_analysis)
         logger.info("Outputs saved to: %s", run_dir)
         return 0
 

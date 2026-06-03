@@ -7,7 +7,7 @@ import json
 import re
 import time
 from typing import Dict, List, Any
-from schema.crm_schema import get_fields_by_touch_point
+from schema.crm_schema import get_fields_by_touch_point, get_field_by_id
 from utils.llm_provider import LLMFactory
 from config import LLM_PROVIDER, PRIMARY_MODEL, MAX_TRANSCRIPT_CHARS, CONFIDENCE_SCORES as _CONFIDENCE_SCORES
 
@@ -147,29 +147,7 @@ class BaseAgent:
                 max_tokens=4000,
                 temperature=0.1,
             )
-
-            # Strip markdown code fences if present
-            json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", response)
-            json_str = json_match.group(1) if json_match else response.strip()
-
-            extracted: Dict[str, Any] = json.loads(json_str)
-
-            results: Dict[str, Any] = {}
-            for field_id, data in extracted.items():
-                if not isinstance(data, dict):
-                    continue
-                value = data.get("value")
-                if value is None:
-                    continue
-                conf_label = data.get("confidence", "speculative")
-                results[str(field_id)] = {
-                    "value": value,
-                    "confidence": _CONFIDENCE_SCORES.get(conf_label, 0.15),
-                    "confidence_level": conf_label,
-                    "source": data.get("source", ""),
-                    "agent": self.name,
-                }
-            return results
+            return self._build_results(response)
 
         except json.JSONDecodeError as e:
             print(f"[{self.name}] JSON parse error: {e}")
@@ -177,6 +155,32 @@ class BaseAgent:
         except Exception as e:
             print(f"[{self.name}] Extraction error: {e}")
             return {}
+
+    def _build_results(self, response: str) -> Dict[str, Any]:
+        """Parse an LLM JSON response (field_id → {value, confidence, source})
+        into normalised field results. Fields with a null value are skipped."""
+        # Strip markdown code fences if present
+        json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", response)
+        json_str = json_match.group(1) if json_match else response.strip()
+
+        extracted: Dict[str, Any] = json.loads(json_str)
+
+        results: Dict[str, Any] = {}
+        for field_id, data in extracted.items():
+            if not isinstance(data, dict):
+                continue
+            value = data.get("value")
+            if value is None:
+                continue
+            conf_label = data.get("confidence", "speculative")
+            results[str(field_id)] = {
+                "value": value,
+                "confidence": _CONFIDENCE_SCORES.get(conf_label, 0.15),
+                "confidence_level": conf_label,
+                "source": data.get("source", ""),
+                "agent": self.name,
+            }
+        return results
 
 
 # ---------------------------------------------------------------------------
@@ -265,6 +269,162 @@ class FeedbackAgent(BaseAgent):
     def run(self, transcript: str, fields: List[Dict] = None) -> Dict[str, Any]:
         fields = fields or get_fields_by_touch_point("Custom Fields (text)")
         return self._extract_fields(transcript, fields, "feedback, sentiment, and custom")
+
+
+class AdvisoryAgent(BaseAgent):
+    """
+    Generative agent — NOT pure extraction.
+
+    Produces two distinct things:
+      • The 'AI Advisory' schema fields (currently the AI's own
+        'AI Financial Suggestion', field 176): the AI's independent
+        recommendation, generated and grounded in the call rather than quoted.
+      • A SEPARATE call analysis / advisor coaching report via `analyze_call()`.
+        This is deliberately NOT a CRM field — it is returned on its own and
+        never merged into the fields dict.
+
+    It never fabricates to fill a slot: with no well-grounded answer it returns
+    null (for fields) or an empty report (for the analysis).
+    """
+
+    _GEN_SYSTEM_PROMPT = (
+        "You are a senior wealth-management advisor and call-quality coach for Turtle "
+        "Finance, a firm serving NRI (Non-Resident Indian) clients returning to India.\n\n"
+        "Your job is to GENERATE well-reasoned advisory content grounded in what was "
+        "actually said on the call and the supplied context — not to quote it verbatim.\n\n"
+        "LANGUAGE: transcripts may be English, Hindi (Devanagari) or Hinglish. Understand all "
+        "of them; always write your output in clear English. Convert Hindi monetary amounts "
+        "('teen crore', 'paanch lakh') to numeric English form.\n\n"
+        "PRINCIPLES:\n"
+        "1. Ground every statement in the conversation/context. Never invent client facts.\n"
+        "2. Do NOT force a response. If there is no meaningful, well-grounded answer, return "
+        "null — an empty field is better than filler.\n"
+        "3. Be specific and constructive; avoid generic boilerplate that fits any client.\n\n"
+        "Respond with valid JSON only. No markdown, no prose outside JSON."
+    )
+
+    def run(self, transcript: str, previous_results: Dict = None) -> Dict[str, Any]:
+        fields = get_fields_by_touch_point("AI Advisory")
+        if not fields:
+            return {}
+        context_summary = self._context_summary(previous_results)
+        return self._generate_fields(transcript, fields, context_summary)
+
+    # ── AI Advisory schema fields (e.g. AI Financial Suggestion) ───────────────
+    def _generate_fields(self, transcript: str, fields: List[Dict], context_summary: str = "") -> Dict[str, Any]:
+        if len(transcript) > self._MAX_TRANSCRIPT_CHARS:
+            transcript = transcript[: self._MAX_TRANSCRIPT_CHARS] + "\n\n[TRANSCRIPT TRUNCATED]"
+
+        field_lines = "\n".join(
+            f"  - ID {f['id']}: {f['attribute']}"
+            + (
+                f"\n      Instruction: {f['extraction_instruction'].strip()}"
+                if f.get("extraction_instruction", "").strip()
+                else ""
+            )
+            for f in fields
+        )
+
+        user_message = (
+            (f"{context_summary}\n\n" if context_summary else "")
+            + "Produce the following advisory field(s) from the call below.\n\n"
+            + f"FIELDS:\n{field_lines}\n\n"
+            + f"TRANSCRIPT:\n{transcript}\n\n"
+            + "Respond with JSON mapping string field IDs to objects:\n"
+            + "{\n"
+            + '  "<field_id>": {\n'
+            + '    "value": "<your generated recommendation, or null if no well-grounded answer>",\n'
+            + '    "confidence": "<exact_quote|clearly_inferable|estimated|indirect|speculative>",\n'
+            + '    "source": "<brief rationale grounding this in the call>"\n'
+            + "  }\n"
+            + "}"
+        )
+        try:
+            response = self._call_llm(self._GEN_SYSTEM_PROMPT, user_message, max_tokens=2000, temperature=0.3)
+            return self._build_results(response)
+        except json.JSONDecodeError as e:
+            print(f"[{self.name}] JSON parse error: {e}")
+            return {}
+        except Exception as e:
+            print(f"[{self.name}] Advisory generation error: {e}")
+            return {}
+
+    # ── Separate call analysis / advisor coaching — NOT a CRM field ────────────
+    def analyze_call(self, transcript: str, agenda: str = "", previous_results: Dict = None) -> Dict[str, Any]:
+        """
+        Analyse the call against its agenda and return advisor coaching as a
+        standalone report. Returns {} when the transcript is too thin to analyse.
+        """
+        if not transcript or not transcript.strip():
+            return {}
+        if len(transcript) > self._MAX_TRANSCRIPT_CHARS:
+            transcript = transcript[: self._MAX_TRANSCRIPT_CHARS] + "\n\n[TRANSCRIPT TRUNCATED]"
+
+        context_summary = self._context_summary(previous_results)
+        agenda_block = (
+            f"AGENDA FOR THIS CALL:\n{agenda.strip()}\n\n"
+            if agenda and agenda.strip()
+            else "AGENDA FOR THIS CALL: (none supplied — infer the call's purpose from the conversation)\n\n"
+        )
+
+        system_prompt = (
+            self._GEN_SYSTEM_PROMPT
+            + "\n\nFor this task you are reviewing a COMPLETED advisory call and coaching the "
+            "advisor on how to do better — what more they could have asked, what they missed, "
+            "and how they could explain things and run the call more effectively."
+        )
+        user_message = (
+            (f"{context_summary}\n\n" if context_summary else "")
+            + agenda_block
+            + f"TRANSCRIPT:\n{transcript}\n\n"
+            + "Analyse how well this call addressed its agenda and the client's goals, then coach "
+            "the advisor. Respond with JSON only, in this exact shape:\n"
+            + "{\n"
+            + '  "agenda_coverage": "<how fully the agenda and client goals were covered>",\n'
+            + '  "questions_advisor_could_ask": ["<an important question still unanswered>", ...],\n'
+            + '  "information_gaps": ["<useful information the advisor failed to capture>", ...],\n'
+            + '  "communication_coaching": ["<how the advisor could explain things more clearly>", ...],\n'
+            + '  "how_call_could_be_better": "<concrete, specific ways to improve the call overall>"\n'
+            + "}\n"
+            + "Use empty arrays or short strings where there is nothing meaningful to say. Be "
+            "specific to THIS call — no generic boilerplate."
+        )
+        try:
+            response = self._call_llm(system_prompt, user_message, max_tokens=2500, temperature=0.3)
+            json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", response)
+            json_str = json_match.group(1) if json_match else response.strip()
+            analysis = json.loads(json_str)
+            if not isinstance(analysis, dict):
+                return {}
+            return {"agent": self.name, "agenda": agenda or "", **analysis}
+        except json.JSONDecodeError as e:
+            print(f"[{self.name}] Call analysis JSON parse error: {e}")
+            return {}
+        except Exception as e:
+            print(f"[{self.name}] Call analysis error: {e}")
+            return {}
+
+    # ── Shared context builder ─────────────────────────────────────────────────
+    @staticmethod
+    def _context_summary(previous_results: Dict = None, max_lines: int = 60) -> str:
+        """Summarise already-extracted fields (attribute: value) for grounding."""
+        if not previous_results:
+            return ""
+        lines: List[str] = []
+        for fid, data in previous_results.items():
+            if not isinstance(data, dict):
+                continue
+            value = data.get("value")
+            if value in (None, ""):
+                continue
+            field_def = get_field_by_id(int(fid)) if str(fid).isdigit() else None
+            attr = (field_def or {}).get("attribute") or data.get("attribute") or f"Field {fid}"
+            lines.append(f"  - {attr}: {value}")
+            if len(lines) >= max_lines:
+                break
+        if not lines:
+            return ""
+        return "CONTEXT ALREADY EXTRACTED FROM THIS CLIENT'S CALL:\n" + "\n".join(lines)
 
 
 class SystemResolver:
