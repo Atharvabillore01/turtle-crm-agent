@@ -11,6 +11,7 @@ from .base_agent import (
     ScheduleAgent,
     TaskAgent,
     FeedbackAgent,
+    AdvisoryAgent,
     SystemResolver,
 )
 
@@ -24,5 +25,6 @@ __all__ = [
     'ScheduleAgent',
     'TaskAgent',
     'FeedbackAgent',
+    'AdvisoryAgent',
     'SystemResolver',
 ]

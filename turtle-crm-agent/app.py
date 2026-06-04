@@ -21,7 +21,7 @@ app = FastAPI(
     description=(
         "AI-powered CRM field extraction from financial advisory call transcripts.\n\n"
         "Supports **English**, **Hindi (Devanagari)**, and **Hinglish**.\n"
-        "Extracts up to **174 CRM parameters** with confidence scores and source quotes.\n\n"
+        "Extracts up to **176 CRM parameters** with confidence scores and source quotes.\n\n"
         "Called by the `meeting-service` transcript processor."
     ),
     version="1.0.0",
@@ -80,7 +80,7 @@ async def extract(req: ExtractRequest):
 
     Agent names (canonical):
         DemographicsAgent, FinanceAgent, GoalsAgent, ProfessionalAgent,
-        ScheduleAgent, QualitativeAgent, TaskAgent, FeedbackAgent
+        ScheduleAgent, QualitativeAgent, TaskAgent, FeedbackAgent, AdvisoryAgent
 
     Response shape (consumed by meeting-service transcript_processor):
         {
@@ -88,7 +88,8 @@ async def extract(req: ExtractRequest):
           "model": str,
           "duration_seconds": float,
           "fields": { "<field_id>": {...}, ... },
-          "token_usage": {...}
+          "token_usage": {...},
+          "call_analysis": {...}   # standalone advisor coaching — NOT a field
         }
 
     `run_extraction` is sync (uses blocking LLM client calls). We offload

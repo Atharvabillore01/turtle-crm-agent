@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "total_fields": 174,
+  "total_fields": 176,
   "last_updated": "2026-04-20",
   "source_file": "174 param.xlsx",
   "fields": [
@@ -1530,15 +1530,15 @@
     },
     {
       "id": 128,
-      "attribute": "Suggestions",
+      "attribute": "General Suggestion",
       "touch_point": "Custom Fields (text)",
       "entity_1": "Client_CRM_Fields",
       "entity_2": null,
       "entity_3": null,
-      "source": "Data Collection",
-      "filled_by": "Manual",
-      "notes": "doubt",
-      "extraction_instruction": ""
+      "source": "Meetings + Conversation",
+      "filled_by": "AI",
+      "notes": null,
+      "extraction_instruction": "A GENERAL (non-financial) suggestion or next step the ADVISOR explicitly made to the client during the call — e.g. documentation, process, lifestyle, family, health, or relationship-management advice. Extract ONLY what the advisor actually said; do not generate your own. Return null if the advisor made no general suggestion. Keep financial/investment advice out of this field; that belongs in 'Financial Suggestion'."
     },
     {
       "id": 129,
@@ -1813,8 +1813,8 @@
       "entity_3": null,
       "source": "Meetings",
       "filled_by": "AI",
-      "notes": "doubt",
-      "extraction_instruction": "Custom tags for personal finance topics the client expressed interest in (comma-separated)."
+      "notes": null,
+      "extraction_instruction": "Comma-separated tags for the personal-finance topics the CLIENT explicitly expressed interest in during the conversation (e.g. 'retirement planning', 'mutual funds', 'real estate', 'tax saving', \"children's education\", 'NRI investments', 'insurance', 'estate planning'). Include a topic ONLY when the client showed clear, stated interest — asked about it, said they want to focus on it, or repeatedly raised it. Do NOT include a topic merely because the advisor mentioned it or because it was discussed in passing. Normalise each tag to a short canonical phrase. Return null if no clear area of interest was expressed."
     },
     {
       "id": 152,
@@ -2091,6 +2091,30 @@
       "filled_by": "System",
       "notes": null,
       "extraction_instruction": ""
+    },
+    {
+      "id": 175,
+      "attribute": "Financial Suggestion",
+      "touch_point": "Custom Fields (text)",
+      "entity_1": "Client_CRM_Fields",
+      "entity_2": null,
+      "entity_3": null,
+      "source": "Meetings + Conversation",
+      "filled_by": "AI",
+      "notes": null,
+      "extraction_instruction": "A FINANCIAL suggestion or recommendation the ADVISOR explicitly made during the call — e.g. investment, savings, tax, insurance, portfolio, or planning advice. Extract ONLY what the advisor actually said; do not generate your own. Return null if the advisor made no financial suggestion. This field is for the advisor's own words; the AI's independent recommendation goes in 'AI Financial Suggestion'."
+    },
+    {
+      "id": 176,
+      "attribute": "AI Financial Suggestion",
+      "touch_point": "AI Advisory",
+      "entity_1": "Client_CRM_Fields",
+      "entity_2": null,
+      "entity_3": null,
+      "source": "AI Analysis",
+      "filled_by": "AI",
+      "notes": null,
+      "extraction_instruction": "The AI's OWN financial recommendation for this client, generated and grounded in the situation, goals, and constraints actually discussed on the call (income, assets, risk profile, life stage, goals). Give a concrete, useful financial suggestion ONLY when the conversation provides a clear basis for one. It must not feel forced — if there is not enough grounding for a meaningful recommendation, return null. This is the AI's independent view, distinct from the advisor's 'Financial Suggestion'."
     }
   ]
 }
